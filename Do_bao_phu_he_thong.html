@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<title>Độ bao phủ kiểm thử của hệ thống</title>
+<style>
+body { font-family: "Times New Roman", serif; font-size: 14px; color: #000000; margin: 20px; }
+h1 { font-size: 18px; } h2 { font-size: 15px; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
+th, td { border: 1px solid #000000; padding: 3px 5px; text-align: left; vertical-align: top; }
+</style></head><body>
+<h1>Độ bao phủ kiểm thử của hệ thống</h1>
+<p>Thời điểm đo: ngày 1 tháng 10 năm 2026. Công cụ: JaCoCo phiên bản 0.8.12 chạy cùng Maven Surefire 3.5.2. Số liệu lấy trực tiếp từ tệp target/site/jacoco/jacoco.csv và được lưu trong thư mục bang_chung_so_lieu thành hai bản: jacoco_do_bao_phu_158.csv và jacoco_do_bao_phu_163.csv.</p>
+<p>Kết quả đo trùng khớp hoàn toàn với lần đo ngày 30 tháng 9 năm 2026 đã ghi trong báo cáo thiết kế ma trận kiểm thử, chỉ khác nhau ở thời gian chạy do trạng thái máy. Điều này cho thấy độ bao phủ của bộ kiểm thử là ổn định qua các lần chạy.</p>
+<p>Hai lần đo: lần thứ nhất chạy 158 lượt kiểm thử đơn vị, mọi lượt đều đạt; lần thứ hai chạy toàn bộ 163 lượt, gồm thêm 2 lớp đối chứng dùng Spring context và cơ sở dữ liệu H2. Nhật ký chạy tương ứng là do_bao_phu_158_don_vi.log và do_bao_phu_163_toan_bo.log.</p>
+<p>Phạm vi: số liệu là độ bao phủ của phần máy chủ backend. Hai dự án giao diện là speed-frontend và Modern Delivery System UI không có tệp kiểm thử và không khai báo công cụ chạy kiểm thử trong package.json, nên không có số liệu độ bao phủ cho phần giao diện.</p>
+<h2>Tổng quan</h2>
+<table><thead><tr><th>Chỉ số</th><th>Lần chạy 158 lượt kiểm thử đơn vị</th><th>Lần chạy 163 lượt gồm 2 lớp đối chứng</th></tr></thead><tbody>
+<tr><td>Số lớp được đo</td><td>66 lớp</td><td>66 lớp</td></tr>
+<tr><td>Độ bao phủ dòng</td><td>789 trên 1269 tương ứng 62,2 phần trăm</td><td>870 trên 1269 tương ứng 68,6 phần trăm</td></tr>
+<tr><td>Độ bao phủ nhánh</td><td>124 trên 214 tương ứng 57,9 phần trăm</td><td>124 trên 214 tương ứng 57,9 phần trăm</td></tr>
+<tr><td>Độ bao phủ chỉ dẫn</td><td>3558 trên 5796 tương ứng 61,4 phần trăm</td><td>3929 trên 5796 tương ứng 67,8 phần trăm</td></tr>
+<tr><td>Độ bao phủ phương thức</td><td>125 trên 300 tương ứng 41,7 phần trăm</td><td>155 trên 300 tương ứng 51,7 phần trăm</td></tr>
+<tr><td>Gói service.impl</td><td>18 lớp, dòng 689 trên 872 tương ứng 79,0 phần trăm</td><td>18 lớp, dòng 710 trên 872 tương ứng 81,4 phần trăm</td></tr>
+<tr><td>11 lớp nghiệp vụ đã có kiểm thử</td><td>689 trên 722 tương ứng 95,4 phần trăm</td><td>689 trên 722 tương ứng 95,4 phần trăm</td></tr>
+<tr><td>2 lớp bảo mật đã có kiểm thử</td><td>dòng 52 trên 56, nhánh 2 trên 2</td><td>dòng 52 trên 56, nhánh 2 trên 2</td></tr>
+</tbody></table>
+<h2>Theo gói mã nguồn</h2>
+<table><thead><tr><th>Gói</th><th>Số lớp</th><th>Lần chạy 158 lượt</th><th>Tỉ lệ dòng</th><th>Lần chạy 163 lượt</th><th>Tỉ lệ dòng</th><th>Nhánh đã phủ trên tổng</th></tr></thead><tbody>
+<tr><td>com.speed.delivery</td><td>1</td><td>0 trên 3</td><td>0,0 phần trăm</td><td>1 trên 3</td><td>33,3 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.config</td><td>2</td><td>0 trên 42</td><td>0,0 phần trăm</td><td>42 trên 42</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>9</td><td>0 trên 102</td><td>0,0 phần trăm</td><td>0 trên 102</td><td>0,0 phần trăm</td><td>0 trên 8</td></tr>
+<tr><td>com.speed.delivery.dto.response</td><td>1</td><td>0 trên 23</td><td>0,0 phần trăm</td><td>0 trên 23</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>16</td><td>0 trên 56</td><td>0,0 phần trăm</td><td>9 trên 56</td><td>16,1 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>9</td><td>36 trên 45</td><td>80,0 phần trăm</td><td>41 trên 45</td><td>91,1 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>7</td><td>12 trên 52</td><td>23,1 phần trăm</td><td>14 trên 52</td><td>26,9 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.security</td><td>3</td><td>52 trên 74</td><td>70,3 phần trăm</td><td>53 trên 74</td><td>71,6 phần trăm</td><td>2 trên 10</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>18</td><td>689 trên 872</td><td>79,0 phần trăm</td><td>710 trên 872</td><td>81,4 phần trăm</td><td>122 trên 196</td></tr>
+</tbody></table>
+<h2>Chi tiết theo từng lớp</h2>
+<table><thead><tr><th>Gói</th><th>Lớp</th><th>Lần chạy 158 lượt</th><th>Tỉ lệ dòng</th><th>Lần chạy 163 lượt</th><th>Tỉ lệ dòng</th><th>Nhánh đã phủ trên tổng</th></tr></thead><tbody>
+<tr><td>com.speed.delivery</td><td>SpeedApplication</td><td>0 trên 3</td><td>0,0 phần trăm</td><td>1 trên 3</td><td>33,3 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.config</td><td>SecurityConfig</td><td>0 trên 26</td><td>0,0 phần trăm</td><td>26 trên 26</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.config</td><td>SwaggerConfig</td><td>0 trên 16</td><td>0,0 phần trăm</td><td>16 trên 16</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>AdminController</td><td>0 trên 9</td><td>0,0 phần trăm</td><td>0 trên 9</td><td>0,0 phần trăm</td><td>0 trên 2</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>AuthController</td><td>0 trên 19</td><td>0,0 phần trăm</td><td>0 trên 19</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>CustomerController</td><td>0 trên 6</td><td>0,0 phần trăm</td><td>0 trên 6</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>DriverController</td><td>0 trên 8</td><td>0,0 phần trăm</td><td>0 trên 8</td><td>0,0 phần trăm</td><td>0 trên 2</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>NotificationController</td><td>0 trên 8</td><td>0,0 phần trăm</td><td>0 trên 8</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>OrderController</td><td>0 trên 8</td><td>0,0 phần trăm</td><td>0 trên 8</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>ReviewController</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>VoucherController</td><td>0 trên 36</td><td>0,0 phần trăm</td><td>0 trên 36</td><td>0,0 phần trăm</td><td>0 trên 4</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>WalletController</td><td>0 trên 3</td><td>0,0 phần trăm</td><td>0 trên 3</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.dto.response</td><td>ApiResponse</td><td>0 trên 23</td><td>0,0 phần trăm</td><td>0 trên 23</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Address</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Customer</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Driver</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Log</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Notification</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Order</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>OrderHistory</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>OtpCode</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Payment</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>RefreshToken</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Review</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Role</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Transaction</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 2</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>User</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>3 trên 5</td><td>60,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Voucher</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Wallet</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>DeliveryType</td><td>5 trên 5</td><td>100,0 phần trăm</td><td>5 trên 5</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>DiscountType</td><td>3 trên 3</td><td>100,0 phần trăm</td><td>3 trên 3</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>DriverStatus</td><td>4 trên 4</td><td>100,0 phần trăm</td><td>4 trên 4</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>NotificationType</td><td>6 trên 6</td><td>100,0 phần trăm</td><td>6 trên 6</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>OrderStatus</td><td>8 trên 8</td><td>100,0 phần trăm</td><td>8 trên 8</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>PaymentMethod</td><td>5 trên 5</td><td>100,0 phần trăm</td><td>5 trên 5</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>PaymentStatus</td><td>5 trên 5</td><td>100,0 phần trăm</td><td>5 trên 5</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>RoleName</td><td>0 trên 4</td><td>0,0 phần trăm</td><td>0 trên 4</td><td>0,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>TransactionType</td><td>0 trên 5</td><td>0,0 phần trăm</td><td>5 trên 5</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>BadRequestException</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>DuplicateResourceException</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>GlobalExceptionHandler</td><td>0 trên 38</td><td>0,0 phần trăm</td><td>2 trên 38</td><td>5,3 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>PaymentFailedException</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>ResourceNotFoundException</td><td>2 trên 4</td><td>50,0 phần trăm</td><td>2 trên 4</td><td>50,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>UnauthorizedException</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>VoucherExpiredException</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>2 trên 2</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.security</td><td>CustomUserDetailsService</td><td>10 trên 10</td><td>100,0 phần trăm</td><td>10 trên 10</td><td>100,0 phần trăm</td><td>2 trên 2</td></tr>
+<tr><td>com.speed.delivery.security</td><td>JwtAuthenticationFilter</td><td>0 trên 18</td><td>0,0 phần trăm</td><td>1 trên 18</td><td>5,6 phần trăm</td><td>0 trên 8</td></tr>
+<tr><td>com.speed.delivery.security</td><td>JwtTokenProvider</td><td>42 trên 46</td><td>91,3 phần trăm</td><td>42 trên 46</td><td>91,3 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>AdminServiceImpl</td><td>49 trên 49</td><td>100,0 phần trăm</td><td>49 trên 49</td><td>100,0 phần trăm</td><td>5 trên 6</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>AuditLogServiceImpl</td><td>0 trên 31</td><td>0,0 phần trăm</td><td>11 trên 31</td><td>35,5 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>AuthServiceImpl</td><td>139 trên 155</td><td>89,7 phần trăm</td><td>139 trên 155</td><td>89,7 phần trăm</td><td>16 trên 32</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>CustomerServiceImpl</td><td>98 trên 102</td><td>96,1 phần trăm</td><td>98 trên 102</td><td>96,1 phần trăm</td><td>21 trên 30</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>DistanceServiceImpl</td><td>13 trên 13</td><td>100,0 phần trăm</td><td>13 trên 13</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>DriverServiceImpl</td><td>41 trên 41</td><td>100,0 phần trăm</td><td>41 trên 41</td><td>100,0 phần trăm</td><td>9 trên 10</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>EmailServiceImpl</td><td>0 trên 8</td><td>0,0 phần trăm</td><td>2 trên 8</td><td>25,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>FileStorageServiceImpl</td><td>0 trên 7</td><td>0,0 phần trăm</td><td>2 trên 7</td><td>28,6 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>MapServiceImpl</td><td>0 trên 6</td><td>0,0 phần trăm</td><td>2 trên 6</td><td>33,3 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>NotificationServiceImpl</td><td>41 trên 41</td><td>100,0 phần trăm</td><td>41 trên 41</td><td>100,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>OrderServiceImpl</td><td>188 trên 196</td><td>95,9 phần trăm</td><td>188 trên 196</td><td>95,9 phần trăm</td><td>30 trên 58</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>OTPServiceImpl</td><td>0 trên 23</td><td>0,0 phần trăm</td><td>1 trên 23</td><td>4,3 phần trăm</td><td>0 trên 4</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>PaymentServiceImpl</td><td>28 trên 28</td><td>100,0 phần trăm</td><td>28 trên 28</td><td>100,0 phần trăm</td><td>8 trên 8</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>PricingServiceImpl</td><td>19 trên 19</td><td>100,0 phần trăm</td><td>19 trên 19</td><td>100,0 phần trăm</td><td>4 trên 4</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>ReviewServiceImpl</td><td>43 trên 46</td><td>93,5 phần trăm</td><td>43 trên 46</td><td>93,5 phần trăm</td><td>12 trên 14</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>SMSServiceImpl</td><td>0 trên 4</td><td>0,0 phần trăm</td><td>2 trên 4</td><td>50,0 phần trăm</td><td>0 trên 0</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>VoucherServiceImpl</td><td>30 trên 32</td><td>93,8 phần trăm</td><td>30 trên 32</td><td>93,8 phần trăm</td><td>17 trên 18</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>WalletServiceImpl</td><td>0 trên 71</td><td>0,0 phần trăm</td><td>1 trên 71</td><td>1,4 phần trăm</td><td>0 trên 12</td></tr>
+</tbody></table>
+<h2>Các lớp chưa được chạm tới ở lần chạy kiểm thử đơn vị</h2>
+<p>Tổng số 40 lớp có độ bao phủ dòng bằng 0, gồm lớp điều khiển giao diện, lớp thực thể, lớp cấu hình, lớp lọc bảo mật, lớp xử lý lỗi toàn cục và 7 lớp dịch vụ chưa viết kiểm thử.</p>
+<table><thead><tr><th>Gói</th><th>Lớp</th></tr></thead><tbody>
+<tr><td>com.speed.delivery</td><td>SpeedApplication</td></tr>
+<tr><td>com.speed.delivery.config</td><td>SecurityConfig</td></tr>
+<tr><td>com.speed.delivery.config</td><td>SwaggerConfig</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>AdminController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>AuthController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>CustomerController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>DriverController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>NotificationController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>OrderController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>ReviewController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>VoucherController</td></tr>
+<tr><td>com.speed.delivery.controller</td><td>WalletController</td></tr>
+<tr><td>com.speed.delivery.dto.response</td><td>ApiResponse</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Address</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Customer</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Driver</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Log</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Notification</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Order</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>OrderHistory</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>OtpCode</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Payment</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>RefreshToken</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Review</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Role</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Transaction</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>User</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Voucher</td></tr>
+<tr><td>com.speed.delivery.entity</td><td>Wallet</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>RoleName</td></tr>
+<tr><td>com.speed.delivery.enums</td><td>TransactionType</td></tr>
+<tr><td>com.speed.delivery.exception</td><td>GlobalExceptionHandler</td></tr>
+<tr><td>com.speed.delivery.security</td><td>JwtAuthenticationFilter</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>AuditLogServiceImpl</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>EmailServiceImpl</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>FileStorageServiceImpl</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>MapServiceImpl</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>OTPServiceImpl</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>SMSServiceImpl</td></tr>
+<tr><td>com.speed.delivery.service.impl</td><td>WalletServiceImpl</td></tr>
+</tbody></table>
+<h2>Đối chiếu với ngưỡng đã đề ra trong báo cáo</h2>
+<table><thead><tr><th>Mã</th><th>Ngưỡng</th><th>Kết quả đo</th><th>Kết luận</th></tr></thead><tbody>
+<tr><td>BP-1</td><td>Từ 90 phần trăm dòng cho từng lớp nghiệp vụ đã có kiểm thử</td><td>10 trên 11 lớp đạt từ 93,5 tới 100 phần trăm; lớp xác thực đạt 89,7 phần trăm</td><td>Gần đạt</td></tr>
+<tr><td>BP-2</td><td>Từ 85 phần trăm nhánh cho từng lớp nghiệp vụ có nhánh</td><td>Đạt ở thanh toán 100 phần trăm, tính giá 100 phần trăm, mã giảm giá 94,4 phần trăm, tài xế 90,0 phần trăm, đánh giá 85,7 phần trăm; chưa đạt ở đơn hàng 51,7 phần trăm, xác thực 50,0 phần trăm, khách hàng 70,0 phần trăm, quản trị 83,3 phần trăm</td><td>Chưa đạt</td></tr>
+<tr><td>BP-3</td><td>Từ 95 phần trăm dòng cho 11 lớp nghiệp vụ</td><td>95,4 phần trăm</td><td>Đạt</td></tr>
+<tr><td>BP-4</td><td>Từ 60 phần trăm dòng cho toàn dự án</td><td>62,2 phần trăm ở lần chạy kiểm thử đơn vị và 68,6 phần trăm khi chạy thêm 2 lớp đối chứng</td><td>Đạt</td></tr>
+<tr><td>BP-5</td><td>Không còn lớp nghiệp vụ ở mức 0 phần trăm</td><td>Còn 7 lớp ở mức 0 phần trăm, trong đó 3 lớp nghiệp vụ chính là WalletServiceImpl, AuditLogServiceImpl và OTPServiceImpl</td><td>Chưa đạt</td></tr>
+</tbody></table>
+<h2>Cách xem báo cáo chi tiết của công cụ</h2>
+<p>Mở tệp speed-backend/target/site/jacoco/index.html bằng trình duyệt, sau đó nhấp vào tên gói rồi nhấp vào tên lớp để xem từng dòng mã đã được chạy tới hay chưa. Vùng màu xanh là dòng đã được kiểm thử chạy qua, vùng màu đỏ là dòng chưa được chạy tới, vùng màu vàng là nhánh chưa được đi hết.</p>
+</body></html>

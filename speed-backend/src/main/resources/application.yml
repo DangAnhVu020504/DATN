@@ -1,0 +1,73 @@
+# ============================================
+# SPEED DELIVERY - Application Configuration
+# ============================================
+
+spring:
+  application:
+    name: speed-delivery
+
+  # ---- Datasource (MySQL) ----
+  datasource:
+    url: jdbc:mysql://localhost:3306/speed_delivery?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    username: root
+    password: "02052004"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+
+  # ---- JPA / Hibernate ----
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+
+  # ---- Jackson ----
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Ho_Chi_Minh
+    serialization:
+      write-dates-as-timestamps: false
+
+# ---- Server ----
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# ---- JWT Configuration ----
+app:
+  jwt:
+    secret: SpeedDeliverySecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm2024
+    access-token-expiration-ms: 900000       # 15 minutes
+    refresh-token-expiration-ms: 604800000   # 7 days
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000
+
+# ---- Swagger / OpenAPI ----
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+# ---- Logging ----
+logging:
+  level:
+    root: INFO
+    com.speed.delivery: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

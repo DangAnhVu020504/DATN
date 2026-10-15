@@ -1,0 +1,124 @@
+# 🎨 Kế hoạch tái tạo giao diện Frontend
+
+**Mục tiêu:** Tạo lại toàn bộ giao diện frontend dựa theo thiết kế mẫu trong `Modern Delivery System UI`  
+**Phương pháp:** Copy thiết kế UI (Tailwind CSS classes, layout, colors, typography) — giữ nguyên hạ tầng hiện tại (Redux, Auth, API services)  
+
+---
+
+## 📊 So sánh Tech Stack
+
+| | Frontend hiện tại | Thiết kế mẫu | Tương thích? |
+|---|---|---|:---:|
+| **Framework** | React 19 | React 19 | ✅ |
+| **Styling** | Tailwind CSS v4 | Tailwind CSS v4 | ✅ |
+| **Routing** | `react-router-dom` v7 (BrowserRouter) | `react-router` v7 (createBrowserRouter) | ✅ tương đương |
+| **Build** | Vite 8 | Vite 8 | ✅ |
+| **State** | Redux Toolkit | Không có (demo data) | Giữ Redux |
+| **Icons** | `lucide-react` | Emoji | Giữ emoji theo mẫu |
+| **Animation** | `framer-motion` | CSS transitions | Giữ framer-motion |
+
+---
+
+## 🎯 Chiến lược triển khai
+
+1. **Giữ nguyên**: Redux store, authSlice, ProtectedRoute, api.ts, authService.ts, types/index.ts
+2. **Thay thế hoàn toàn**: Tất cả page components + MainLayout
+3. **Cập nhật**: App.tsx (routes), index.css (theme colors + utilities)
+4. **Thêm mới**: 17 page files chưa có
+5. **Font**: Import Nunito + Inter từ Google Fonts
+
+---
+
+## 📋 Phases triển khai
+
+### Phase 1: Cơ sở & Layout
+
+| Hành động | File | Mô tả |
+|:---------:|------|-------|
+| **MODIFY** | [`index.css`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/index.css) | Thêm theme đỏ (#E8192C), font Nunito/Inter, badge styles, utilities |
+| **MODIFY** | [`MainLayout.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/components/layout/MainLayout.tsx) | Tái tạo sidebar + navigation theo thiết kế mẫu (role-based nav, logo, user info) |
+| **MODIFY** | [`App.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/App.tsx) | Thêm routes cho 17 trang mới, giữ ProtectedRoute |
+
+---
+
+### Phase 2: Trang Auth (4 trang)
+
+| Hành động | File | Mô tả |
+|:---------:|------|-------|
+| **REPLACE** | [`LoginPage.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/pages/auth/LoginPage.tsx) | Tái tạo UI: split-screen đỏ gradient + form đăng nhập. **Giữ logic Redux login** |
+| **REPLACE** | [`RegisterPage.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/pages/auth/RegisterPage.tsx) | Tái tạo UI: role tabs + form. **Giữ logic Redux register** |
+| **NEW** | `pages/auth/ForgotPasswordPage.tsx` | Trang quên mật khẩu: gửi OTP qua email |
+| **NEW** | `pages/auth/ResetPasswordPage.tsx` | Trang đặt lại mật khẩu: nhập OTP + mật khẩu mới |
+
+---
+
+### Phase 3: Trang Khách hàng (7 trang)
+
+| Hành động | File | Mô tả |
+|:---------:|------|-------|
+| **REPLACE** | [`CustomerDashboard.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/pages/customer/CustomerDashboard.tsx) | Stats cards, recent orders, promo banner, quick actions |
+| **REPLACE** | [`CreateOrderPage.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/pages/customer/CreateOrderPage.tsx) | Multi-step wizard 3 bước |
+| **NEW** | `pages/customer/OrderListPage.tsx` | Danh sách + tìm kiếm + filter + pagination |
+| **NEW** | `pages/customer/OrderDetailPage.tsx` | Timeline trạng thái, thông tin, đánh giá, hủy đơn |
+| **NEW** | `pages/customer/ProfilePage.tsx` | Avatar, thông tin, đổi mật khẩu |
+| **NEW** | `pages/customer/AddressPage.tsx` | CRUD địa chỉ + modal |
+| **NEW** | `pages/customer/VoucherListPage.tsx` | Danh sách voucher + kiểm tra mã |
+
+---
+
+### Phase 4: Trang Tài xế (5 trang)
+
+| Hành động | File | Mô tả |
+|:---------:|------|-------|
+| **REPLACE** | [`DriverDashboard.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/pages/driver/DriverDashboard.tsx) | Toggle online, stats, đơn mới (nhận/từ chối), quick links |
+| **NEW** | `pages/driver/DriverOrdersPage.tsx` | Lịch sử giao hàng + filter + nút hoàn thành |
+| **NEW** | `pages/driver/DriverWalletPage.tsx` | Số dư, rút tiền, lịch sử giao dịch |
+| **NEW** | `pages/driver/DriverProfilePage.tsx` | Avatar, thống kê, thông tin, đổi mật khẩu |
+| **NEW** | `pages/driver/DriverReviewsPage.tsx` | Điểm trung bình, phân bố sao, danh sách đánh giá |
+
+---
+
+### Phase 5: Trang Admin (6 trang)
+
+| Hành động | File | Mô tả |
+|:---------:|------|-------|
+| **REPLACE** | [`AdminDashboard.tsx`](file:///c:/Users/ANHVU/LEARNING/DATN/DATN-Project/speed-frontend/src/pages/admin/AdminDashboard.tsx) | 4 stat cards, phân bổ trạng thái, top tài xế, doanh thu 7 ngày, hoạt động gần đây |
+| **NEW** | `pages/admin/AdminUsersPage.tsx` | Bảng users + search + filter role + toggle active + delete confirm |
+| **NEW** | `pages/admin/AdminUserDetailPage.tsx` | Chi tiết user + audit logs |
+| **NEW** | `pages/admin/AdminOrdersPage.tsx` | Bảng đơn hàng + filter 7 trạng thái + cập nhật status |
+| **NEW** | `pages/admin/AdminLogsPage.tsx` | Bảng audit logs + filter user/action |
+| **NEW** | `pages/admin/AdminVouchersPage.tsx` | Danh sách + tạo mới modal + toggle trạng thái |
+
+---
+
+### Trang dùng chung
+
+| Hành động | File | Mô tả |
+|:---------:|------|-------|
+| **NEW** | `pages/NotificationPage.tsx` | Danh sách thông báo + đánh dấu đã đọc |
+
+---
+
+## 📊 Tổng kết số lượng file
+
+| Loại | Số lượng |
+|------|:--------:|
+| File thay thế (REPLACE) | **7** |
+| File tạo mới (NEW) | **17** |
+| File sửa đổi (MODIFY) | **3** |
+| **Tổng** | **27 file** |
+
+---
+
+## ⚠️ Lưu ý quan trọng
+
+> [!IMPORTANT]
+> - Thiết kế mẫu dùng **demo data hardcode** → Frontend mới cũng sẽ hardcode data trước, tích hợp API sau
+> - Thiết kế mẫu có "Role Switcher" demo → Frontend mới **không cần** feature này vì đã có ProtectedRoute
+> - Import `react-router` khác `react-router-dom` → Giữ nguyên `react-router-dom` như hiện tại
+> - Giữ `lucide-react` có sẵn, nhưng dùng emoji theo thiết kế mẫu cho consistency
+
+## ❓ Câu hỏi
+
+1. Bạn muốn tôi thực hiện **tất cả 5 phases** cùng lúc, hay triển khai **từng phase** để review?
+2. Bạn có muốn giữ lại code **Redux login/register** hiện tại không, hay tạo mới hoàn toàn?

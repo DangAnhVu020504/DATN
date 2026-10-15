@@ -1,0 +1,10 @@
+{
+  "description": "This web application streamlines fast delivery services, offering a modern and user-friendly interface for customers to easily track and manage their shipments.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

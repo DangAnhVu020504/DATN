@@ -1,0 +1,37 @@
+# Test profile configuration
+spring:
+  application:
+    name: speed-delivery-test
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Ho_Chi_Minh
+
+server:
+  port: 0
+  servlet:
+    context-path: /api
+
+app:
+  jwt:
+    secret: TestSecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm2024TestMode
+    access-token-expiration-ms: 900000
+    refresh-token-expiration-ms: 604800000
+  cors:
+    allowed-origins: http://localhost:5173
+
+logging:
+  level:
+    root: WARN
+    com.speed.delivery: INFO
