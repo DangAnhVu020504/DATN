@@ -10,7 +10,7 @@ build/
 *.class
 
 # Bundled Maven distribution (keep only .mvn/wrapper)
-.mvn/maven/
+**/.mvn/maven/
 
 # Vite / TS
 .vite/
