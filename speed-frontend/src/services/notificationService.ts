@@ -10,6 +10,9 @@ export const notificationService = {
   markAsRead: (id: number) =>
     api.put<ApiResponse<void>>(`/notifications/${id}/read`),
 
+  deleteNotification: (id: number) =>
+    api.delete<ApiResponse<void>>(`/notifications/${id}`),
+
   getUnreadCount: (userId: number) =>
     api.get<ApiResponse<number>>(`/notifications/user/${userId}/unread-count`),
 

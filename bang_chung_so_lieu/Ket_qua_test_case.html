@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<title>Kết quả test case - dự án Speed Delivery</title>
+<style>
+body { font-family: "Times New Roman", serif; font-size: 14px; color: #000000; margin: 20px; }
+h1 { font-size: 18px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #000000; padding: 4px 6px; vertical-align: top; text-align: left; }
+input { font-family: inherit; font-size: 14px; padding: 4px; width: 340px; margin-bottom: 8px; }
+</style></head><body>
+<h1>Kết quả thực thi của từng test case</h1>
+<p>Nguồn số liệu: báo cáo Maven Surefire trong thư mục speed-backend/target/surefire-reports ghép với tên hiển thị trong mã nguồn kiểm thử. Số liệu của lần chạy 194 lượt ngày 18 tháng 10 năm 2026 (lệnh mvn clean verify, đã gồm kiểm tra ngưỡng độ bao phủ).</p>
+<p>Bộ kiểm thử đơn vị: 182 phương thức, 189 lượt chạy, 0 phương thức không đạt, tổng thời gian 4.114 giây.</p>
+<p>Hai lớp đối chứng: 5 phương thức, 5 lượt chạy, 0 phương thức không đạt, tổng thời gian 23.018 giây.</p>
+<p><input id="q" type="text" placeholder="Gõ để lọc theo lớp, mã test case hoặc tên phương thức" onkeyup="loc()"></p>
+<h2>Bộ kiểm thử đơn vị (phạm vi của báo cáo)</h2>
+<p>Cột thời gian là tổng thời gian thực thi của từng test case theo báo cáo Surefire. Nếu cộng thêm chi phí dựng kết nối giữa các test case thì tổng thời gian của 15 lớp là 4.114 giây.</p>
+<table><thead><tr><th>Lớp kiểm thử</th><th>Nhóm con</th><th>Mã hoặc tên hiển thị</th><th>Phương thức kiểm thử</th><th>Số lượt</th><th>Thời gian (giây)</th><th>Kết quả</th></tr></thead><tbody>
+<tr><td>SpeedApplicationTest</td><td>không</td><td></td><td>main_shouldNotThrowException</td><td>1</td><td>0.020</td><td>Đạt</td></tr>
+<tr><td>CustomUserDetailsServiceTest</td><td>không</td><td>UD-TC01: Load user thành công - enabled, authority = ROLE_ADMIN</td><td>loadUserByUsername_Success</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>CustomUserDetailsServiceTest</td><td>không</td><td>UD-TC02: Load user - tài khoản bị khóa → disabled = true</td><td>loadUserByUsername_InactiveUser</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>CustomUserDetailsServiceTest</td><td>không</td><td>UD-TC03: Load user - không tồn tại → UsernameNotFoundException</td><td>loadUserByUsername_NotFound</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>CustomUserDetailsServiceTest</td><td>không</td><td>UD-TC04: Load user - nhiều roles → authorities chứa cả 2 roles</td><td>loadUserByUsername_MultipleRoles</td><td>1</td><td>0.060</td><td>Đạt</td></tr>
+<tr><td>CustomUserDetailsServiceTest</td><td>không</td><td>UD-TC05: Verify repository chỉ gọi 1 lần - không có side effects</td><td>loadUserByUsername_VerifySingleCall</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>GenerateTests</td><td>Tạo access token từ email</td><td>generateAccessToken_FromEmail</td><td>1</td><td>0.029</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>GenerateTests</td><td>Tạo access token từ Authentication</td><td>generateAccessToken_FromAuth</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>GenerateTests</td><td>Tạo refresh token</td><td>generateRefreshToken</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>GenerateTests</td><td>Access token và refresh token khác nhau</td><td>accessAndRefresh_AreDifferent</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>ValidateTests</td><td>Token hợp lệ → true</td><td>validateToken_Valid</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>ValidateTests</td><td>Token sai format → false</td><td>validateToken_Invalid</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>ValidateTests</td><td>Token rỗng → false</td><td>validateToken_Empty</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>ValidateTests</td><td>Extract email từ token</td><td>getEmailFromToken</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>ValidateTests</td><td>Extract email giữ đúng giá trị gốc</td><td>getEmailFromToken_PreservesOriginal</td><td>1</td><td>0.164</td><td>Đạt</td></tr>
+<tr><td>JwtTokenProviderTest</td><td>ValidateTests</td><td>getRefreshTokenExpirationMs trả về giá trị đúng</td><td>getRefreshTokenExpirationMs</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>DashboardTests</td><td>AD-TC01: Dashboard stats - dữ liệu bình thường</td><td>getDashboardStats_Success</td><td>1</td><td>0.022</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>DashboardTests</td><td>AD-TC02: Dashboard stats - revenue null → return 0</td><td>getDashboardStats_NullRevenue</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>GetUsersTests</td><td>AD-TC03: Lấy danh sách users (phân trang)</td><td>getAllUsers_WithPagination</td><td>1</td><td>0.020</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>GetUsersTests</td><td>AD-TC04: Lấy user theo ID - thành công</td><td>getUserById_Success</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>GetUsersTests</td><td>AD-TC05: Lấy user theo ID - không tìm thấy → ResourceNotFoundException</td><td>getUserById_NotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>ToggleActiveTests</td><td>AD-TC06: Kích hoạt tài khoản - isActive = true</td><td>toggleUserActive_Activate</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>ToggleActiveTests</td><td>AD-TC07: Vô hiệu hóa tài khoản - isActive = false</td><td>toggleUserActive_Deactivate</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>ToggleActiveTests</td><td>AD-TC08: Toggle - user không tồn tại → ResourceNotFoundException</td><td>toggleUserActive_NotFound</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>DeleteUserTests</td><td>AD-TC09: Xóa user - thành công</td><td>deleteUser_Success</td><td>1</td><td>0.215</td><td>Đạt</td></tr>
+<tr><td>AdminServiceImplTest</td><td>DeleteUserTests</td><td>AD-TC10: Xóa user - không tồn tại → ResourceNotFoundException</td><td>deleteUser_NotFound</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RegisterTests</td><td>TC01 - Đăng ký thành công</td><td>register_Success</td><td>1</td><td>0.013</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RegisterTests</td><td>TC02 - Email trùng lặp → DuplicateResourceException</td><td>register_DuplicateEmail</td><td>1</td><td>0.010</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RegisterTests</td><td>TC03 - SĐT trùng lặp → DuplicateResourceException</td><td>register_DuplicatePhone</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RegisterTests</td><td>TC04 - Role không tồn tại → ResourceNotFoundException</td><td>register_RoleNotFound</td><td>1</td><td>0.013</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RegisterTests</td><td>TC05 - ArgumentCaptor kiểm tra User được save</td><td>register_CaptureUser</td><td>1</td><td>0.019</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RegisterTests</td><td>TC23 - Đăng ký role DRIVER → tạo hồ sơ Driver, không tạo Customer</td><td>register_DriverRole</td><td>1</td><td>0.013</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>LoginTests</td><td>TC06 - Đăng nhập thành công</td><td>login_Success</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>LoginTests</td><td>TC07 - Sai mật khẩu → BadCredentialsException</td><td>login_WrongPassword</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>LoginTests</td><td>TC08 - Tài khoản bị vô hiệu hóa → UnauthorizedException</td><td>login_Inactive</td><td>1</td><td>0.010</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>LoginTests</td><td>TC09 - User không tồn tại → ResourceNotFoundException</td><td>login_NotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>LoginTests</td><td>TC10 - InOrder kiểm tra thứ tự gọi dependency</td><td>login_InOrder</td><td>1</td><td>0.025</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RefreshTests</td><td>TC11 - Refresh token thành công</td><td>refresh_Success</td><td>1</td><td>0.014</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RefreshTests</td><td>TC12 - Token không hợp lệ → UnauthorizedException</td><td>refresh_Invalid</td><td>1</td><td>0.015</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>RefreshTests</td><td>TC13 - Token hết hạn → UnauthorizedException</td><td>refresh_Expired</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC14 - Quên mật khẩu - gửi OTP thành công</td><td>forgotPassword_Success</td><td>1</td><td>0.014</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC15 - Quên mật khẩu - email không tồn tại → ResourceNotFoundException</td><td>forgotPassword_NotFound</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC16 - Reset mật khẩu thành công</td><td>resetPassword_Success</td><td>1</td><td>0.010</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC17 - Reset mật khẩu - OTP sai → BadRequestException</td><td>resetPassword_BadOtp</td><td>1</td><td>0.013</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC18 - Đổi mật khẩu thành công</td><td>changePassword_Success</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC19 - Đổi mật khẩu - sai mật khẩu cũ → BadRequestException</td><td>changePassword_WrongOld</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC20 - Logout revoke token thành công</td><td>logout_Success</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC21 - Logout token không tồn tại → không throw exception</td><td>logout_NoToken</td><td>1</td><td>0.017</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>PasswordTests</td><td>TC22 - Get profile thành công</td><td>getProfile_Success</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>UpdateProfileTests</td><td>TC24 - Cập nhật hồ sơ thành công - đủ trường</td><td>updateProfile_Success_AllFields</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>UpdateProfileTests</td><td>TC25 - Cập nhật SĐT trùng người khác → DuplicateResourceException</td><td>updateProfile_DuplicatePhone</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>AuthServiceImplTest</td><td>UpdateProfileTests</td><td>TC26 - Cập nhật hồ sơ - user không tồn tại → ResourceNotFoundException</td><td>updateProfile_UserNotFound</td><td>1</td><td>0.014</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>GetProfileTests</td><td>CS-TC01: Lấy profile thành công</td><td>getProfile_Success</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>GetProfileTests</td><td>CS-TC02: Lấy profile - user không tồn tại → ResourceNotFoundException</td><td>getProfile_NotFound</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>UpdateProfileTests</td><td>CS-TC03: Cập nhật profile - fullName thành công</td><td>updateProfile_FullName</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>UpdateProfileTests</td><td>CS-TC04: Cập nhật profile - SĐT trùng → DuplicateResourceException</td><td>updateProfile_DuplicatePhone</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC05: Lấy danh sách địa chỉ thành công</td><td>getAddresses_Success</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC06: Thêm địa chỉ mới thành công</td><td>addAddress_Success</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC07: Thêm địa chỉ mặc định - reset các địa chỉ cũ</td><td>addAddress_SetDefault_ResetsOldDefaults</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC08: Cập nhật địa chỉ - thành công</td><td>updateAddress_Success</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC09: Cập nhật địa chỉ - không thuộc customer → BadRequestException</td><td>updateAddress_WrongCustomer</td><td>1</td><td>0.194</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC10: Xóa địa chỉ - thành công</td><td>deleteAddress_Success</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC11: Xóa địa chỉ - không thuộc customer → BadRequestException</td><td>deleteAddress_WrongCustomer</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>CustomerServiceImplTest</td><td>AddressTests</td><td>CS-TC12: Đặt địa chỉ mặc định - reset cũ và set mới</td><td>setDefaultAddress_Success</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Khoảng cách giữa 2 điểm trùng nhau = 0</td><td>samePoint_ZeroDistance</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Q.1 → Q.3 HCM (~3-4km)</td><td>hcm_District1To3</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>HCM → Hà Nội (~1200km)</td><td>hcm_ToHanoi</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Khoảng cách xấp xỉ 111km/degree</td><td>degreeApproximation</td><td>2</td><td>0.070</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Estimate time - 25km → ~60 phút</td><td>estimateTime_25km</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Estimate time - 5km → ~12 phút</td><td>estimateTime_5km</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Estimate time - 0km → 0 phút</td><td>estimateTime_Zero</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Khoảng cách luôn dương</td><td>distance_AlwaysPositive</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>DistanceServiceImplTest</td><td>không</td><td>Khoảng cách đối xứng (A→B = B→A)</td><td>distance_Symmetric</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>ToggleAvailabilityTests</td><td>DR-TC01: Bật trạng thái khả dụng - ONLINE</td><td>toggleAvailability_SetOnline</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>ToggleAvailabilityTests</td><td>DR-TC02: Tắt trạng thái khả dụng - OFFLINE</td><td>toggleAvailability_SetOffline</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>ToggleAvailabilityTests</td><td>DR-TC03: Toggle - driver không tồn tại → ResourceNotFoundException</td><td>toggleAvailability_DriverNotFound</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>AcceptOrderTests</td><td>DR-TC04: Nhận đơn hàng thành công - delegate sang OrderService</td><td>acceptOrder_Success</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>AcceptOrderTests</td><td>DR-TC05: Nhận đơn - tài xế không khả dụng → BadRequestException</td><td>acceptOrder_DriverUnavailable</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>AcceptOrderTests</td><td>DR-TC15: Nhận đơn - driver không tồn tại → ResourceNotFoundException</td><td>acceptOrder_DriverNotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>AcceptOrderTests</td><td>DR-TC06: Từ chối đơn hàng - ghi audit log và gửi thông báo</td><td>rejectOrder_Success</td><td>1</td><td>0.271</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>AcceptOrderTests</td><td>DR-TC18: Từ chối đơn - đơn không tồn tại → ResourceNotFoundException</td><td>rejectOrder_OrderNotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>CompleteDeliveryTests</td><td>DR-TC07: Hoàn thành giao hàng thành công</td><td>completeDelivery_Success</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>CompleteDeliveryTests</td><td>DR-TC08: Hoàn thành giao hàng - đơn không thuộc driver → BadRequestException</td><td>completeDelivery_WrongDriver</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>CompleteDeliveryTests</td><td>DR-TC09: Hoàn thành giao hàng - đơn chưa đang giao → BadRequestException</td><td>completeDelivery_WrongStatus</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>CompleteDeliveryTests</td><td>DR-TC16: Hoàn thành giao hàng - driver không tồn tại → ResourceNotFoundException</td><td>completeDelivery_DriverNotFound</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>HistoryAndEarningsTests</td><td>DR-TC10: Lấy lịch sử giao hàng - delegate sang OrderService</td><td>getDeliveryHistory_Success</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>HistoryAndEarningsTests</td><td>DR-TC11: Lấy thu nhập tài xế</td><td>getEarnings_Success</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>HistoryAndEarningsTests</td><td>DR-TC12: Lấy thu nhập - driver không tồn tại → ResourceNotFoundException</td><td>getEarnings_DriverNotFound</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>HistoryAndEarningsTests</td><td>DR-TC17: Lấy lịch sử - driver không tồn tại → ResourceNotFoundException</td><td>getDeliveryHistory_DriverNotFound</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>GetDriverProfileTests</td><td>DR-TC13: Lấy hồ sơ tài xế thành công - map đủ trường</td><td>getDriverProfile_Success</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>DriverServiceImplTest</td><td>GetDriverProfileTests</td><td>DR-TC14: Lấy hồ sơ - driver không tồn tại → ResourceNotFoundException</td><td>getDriverProfile_DriverNotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>NotificationServiceImplTest</td><td>SendNotificationTests</td><td>NF-TC01: Gửi notification thành công - isRead = false</td><td>sendNotification_Success</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>NotificationServiceImplTest</td><td>SendNotificationTests</td><td>NF-TC02: Gửi order notification - type = ORDER, referenceId = orderId</td><td>sendOrderNotification_Success</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>NotificationServiceImplTest</td><td>SendNotificationTests</td><td>NF-TC03: ArgumentCaptor - verify notification content chính xác</td><td>sendNotification_VerifyContent</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>NotificationServiceImplTest</td><td>SendNotificationTests</td><td>NF-TC04: Lấy notifications (phân trang)</td><td>getUserNotifications_Success</td><td>1</td><td>0.185</td><td>Đạt</td></tr>
+<tr><td>NotificationServiceImplTest</td><td>MarkAsReadTests</td><td>NF-TC05: Đánh dấu đã đọc - thành công</td><td>markAsRead_Success</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>NotificationServiceImplTest</td><td>MarkAsReadTests</td><td>NF-TC06: Đánh dấu đã đọc - không tìm thấy → silent (không throw)</td><td>markAsRead_NotFound</td><td>1</td><td>0.010</td><td>Đạt</td></tr>
+<tr><td>NotificationServiceImplTest</td><td>MarkAsReadTests</td><td>NF-TC07: Đếm notification chưa đọc</td><td>getUnreadCount_Success</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>CreateOrderTests</td><td>Tạo đơn thành công - Happy path</td><td>createOrder_Success</td><td>1</td><td>0.010</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>CreateOrderTests</td><td>Tạo đơn - Customer không tồn tại</td><td>createOrder_CustomerNotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>CreateOrderTests</td><td>Tạo đơn với voucher</td><td>createOrder_WithVoucher</td><td>1</td><td>0.010</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>CreateOrderTests</td><td>Tạo đơn - verify ArgumentCaptor cho Order save</td><td>createOrder_VerifyOrderSaved</td><td>1</td><td>0.014</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>GetOrderTests</td><td>Lấy đơn theo ID</td><td>getOrderById_Success</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>GetOrderTests</td><td>Lấy đơn theo ID - không tìm thấy</td><td>getOrderById_NotFound</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>GetOrderTests</td><td>Lấy đơn theo mã code</td><td>getOrderByCode_Success</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>GetOrderTests</td><td>Danh sách đơn hàng customer (pagination)</td><td>getCustomerOrders_WithPagination</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>AssignDriverTests</td><td>Gán tài xế thành công</td><td>assignDriver_Success</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>AssignDriverTests</td><td>Gán tài xế - đơn sai trạng thái</td><td>assignDriver_WrongStatus</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>AssignDriverTests</td><td>Gán tài xế - driver không khả dụng</td><td>assignDriver_DriverUnavailable</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>AssignDriverTests</td><td>Gán tài xế - verify thông báo gửi cho cả 2 bên</td><td>assignDriver_VerifyNotifications</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>StatusTests</td><td>Cập nhật PENDING → CONFIRMED</td><td>updateStatus_PendingToConfirmed</td><td>1</td><td>0.014</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>StatusTests</td><td>Cập nhật IN_TRANSIT → DELIVERED (driver stats update)</td><td>updateStatus_Delivered</td><td>1</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>StatusTests</td><td>Cập nhật trạng thái không hợp lệ (DELIVERED → PENDING)</td><td>updateStatus_InvalidTransition</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>CancelTests</td><td>Hủy đơn thành công</td><td>cancelOrder_Success</td><td>1</td><td>0.012</td><td>Đạt</td></tr>
+<tr><td>OrderServiceImplTest</td><td>CancelTests</td><td>Hủy đơn đã giao - thất bại</td><td>cancelOrder_AlreadyDelivered</td><td>1</td><td>0.721</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>ProcessPaymentTests</td><td>PM-TC01: Thanh toán tiền mặt (CASH) thành công - status = PENDING</td><td>processPayment_Cash_Success</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>ProcessPaymentTests</td><td>PM-TC02: Thanh toán online thành công - status = COMPLETED, paidAt != null</td><td>processPayment_BankTransfer_Success</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>ProcessPaymentTests</td><td>PM-TC03: Thanh toán thất bại - Order không tồn tại → ResourceNotFoundException</td><td>processPayment_OrderNotFound</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>ProcessPaymentTests</td><td>PM-TC04: Thanh toán thất bại - Amount null → PaymentFailedException</td><td>processPayment_NullAmount</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>ProcessPaymentTests</td><td>PM-TC05: Thanh toán thất bại - Amount ≤ 0 → PaymentFailedException</td><td>processPayment_NegativeAmount</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>ProcessPaymentTests</td><td>PM-TC06: ArgumentCaptor - kiểm tra Payment được save với đúng dữ liệu</td><td>processPayment_CapturePaymentSaved</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>RefundPaymentTests</td><td>PM-TC07: Hoàn tiền thành công - status chuyển thành REFUNDED</td><td>refundPayment_Success</td><td>1</td><td>0.012</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>RefundPaymentTests</td><td>PM-TC08: Hoàn tiền - không tìm thấy Payment → return false, không save</td><td>refundPayment_NotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>GetPaymentStatusTests</td><td>PM-TC09: Trạng thái thanh toán - tìm thấy → return COMPLETED</td><td>getPaymentStatus_Found</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>PaymentServiceImplTest</td><td>GetPaymentStatusTests</td><td>PM-TC10: Trạng thái thanh toán - không tìm thấy → return NOT_FOUND</td><td>getPaymentStatus_NotFound</td><td>1</td><td>0.169</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>BasePriceTests</td><td>Base price luôn = 15,000₫</td><td>calculateBasePrice</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>DistancePriceTests</td><td>0km → 0₫</td><td>distancePrice_Zero</td><td>1</td><td>0.000</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>DistancePriceTests</td><td>1km → 5,000₫</td><td>distancePrice_OneKm</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>DistancePriceTests</td><td>Distance price calculation</td><td>distancePrice_Parametrized</td><td>4</td><td>0.008</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>WeightTests</td><td>null weight → 0₫ surcharge</td><td>weightSurcharge_Null</td><td>1</td><td>0.029</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>WeightTests</td><td>≤5kg → 0₫ surcharge</td><td>weightSurcharge_UnderThreshold</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>WeightTests</td><td>5kg (boundary) → 0₫ surcharge</td><td>weightSurcharge_ExactThreshold</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>WeightTests</td><td>6kg → 3,000₫ surcharge (1kg excess)</td><td>weightSurcharge_OneKgOver</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>WeightTests</td><td>10kg → 15,000₫ surcharge (5kg excess)</td><td>weightSurcharge_FiveKgOver</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>WeightTests</td><td>Weight surcharge parametrized</td><td>weightSurcharge_Parametrized</td><td>4</td><td>0.015</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>TotalPriceTests</td><td>5km, 2kg → base + distance + 0 surcharge</td><td>totalPrice_NormalOrder</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>TotalPriceTests</td><td>10km, 8kg → base + distance + weight surcharge</td><td>totalPrice_HeavyOrder</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>TotalPriceTests</td><td>0km, 0kg → only base price</td><td>totalPrice_ZeroDistance</td><td>1</td><td>0.001</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>EarningsTests</td><td>40,000₫ → 32,000₫ earnings (80%)</td><td>driverEarnings_Normal</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>EarningsTests</td><td>0₫ → 0₫ earnings</td><td>driverEarnings_Zero</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>PricingServiceImplTest</td><td>EarningsTests</td><td>100,000₫ → 80,000₫ earnings</td><td>driverEarnings_Large</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>ReviewServiceImplTest</td><td>không</td><td>Đánh giá 5 sao thành công</td><td>createReview_Success</td><td>1</td><td>0.012</td><td>Đạt</td></tr>
+<tr><td>ReviewServiceImplTest</td><td>không</td><td>Rating ngoài khoảng 1-5</td><td>createReview_InvalidRating</td><td>1</td><td>0.214</td><td>Đạt</td></tr>
+<tr><td>ReviewServiceImplTest</td><td>không</td><td>Đánh giá trùng - đã đánh giá rồi</td><td>createReview_AlreadyReviewed</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>ReviewServiceImplTest</td><td>không</td><td>Đánh giá đơn chưa giao</td><td>createReview_NotDelivered</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>ReviewServiceImplTest</td><td>không</td><td>Đánh giá đơn không thuộc customer</td><td>createReview_WrongCustomer</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>ReviewServiceImplTest</td><td>không</td><td>Lấy review theo orderId</td><td>getOrderReview_Success</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>ReviewServiceImplTest</td><td>không</td><td>Lấy review - không tìm thấy</td><td>getOrderReview_NotFound</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ValidateTests</td><td>Validate thành công</td><td>validate_Success</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ValidateTests</td><td>Voucher không tồn tại</td><td>validate_NotFound</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ValidateTests</td><td>Voucher bị vô hiệu hóa</td><td>validate_Inactive</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ValidateTests</td><td>Voucher hết hạn</td><td>validate_Expired</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ValidateTests</td><td>Voucher chưa có hiệu lực</td><td>validate_NotYetActive</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ValidateTests</td><td>Voucher hết lượt sử dụng</td><td>validate_UsageLimitReached</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ValidateTests</td><td>Giá trị đơn hàng thấp hơn tối thiểu</td><td>validate_BelowMinOrder</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ApplyTests</td><td>Áp dụng voucher % - bình thường</td><td>apply_Percentage</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ApplyTests</td><td>Áp dụng voucher % - cap tại maxDiscount</td><td>apply_Percentage_MaxDiscount</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ApplyTests</td><td>Áp dụng voucher số tiền cố định</td><td>apply_Fixed</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ApplyTests</td><td>Lấy danh sách voucher đang hoạt động</td><td>getActiveVouchers</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ApplyTests</td><td>Tạo voucher thành công</td><td>createVoucher_Success</td><td>1</td><td>0.255</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ApplyTests</td><td>Tạo voucher - mã đã tồn tại</td><td>createVoucher_Duplicate</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ManagementTests</td><td>Lấy voucher theo ID thành công</td><td>getVoucherById_Success</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ManagementTests</td><td>Lấy voucher theo ID - không tồn tại → ResourceNotFoundException</td><td>getVoucherById_NotFound</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ManagementTests</td><td>Lấy toàn bộ voucher</td><td>getAllVouchers_Success</td><td>1</td><td>0.009</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ManagementTests</td><td>Toggle - đang hoạt động → vô hiệu hóa</td><td>toggleActive_Deactivate</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>VoucherServiceImplTest</td><td>ManagementTests</td><td>Toggle - đang vô hiệu → kích hoạt lại</td><td>toggleActive_Activate</td><td>1</td><td>0.003</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>GetWalletTests</td><td>WL-TC01: Lấy ví thành công - ví đã tồn tại</td><td>getWallet_Success</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>GetWalletTests</td><td>WL-TC02: Ví chưa tồn tại → tự động tạo ví mới số dư 0</td><td>getWallet_AutoCreateWhenMissing</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>GetWalletTests</td><td>WL-TC03: Lấy ví - driver không tồn tại → ResourceNotFoundException</td><td>getWallet_DriverNotFound</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>AddEarningTests</td><td>WL-TC04: Cộng thu nhập thành công - ArgumentCaptor kiểm tra Transaction</td><td>addEarning_Success</td><td>1</td><td>0.011</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>AddEarningTests</td><td>WL-TC05: Số tiền null → BadRequestException, không chạm repository</td><td>addEarning_NullAmount</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>AddEarningTests</td><td>WL-TC06: Số tiền bằng 0 → BadRequestException</td><td>addEarning_ZeroAmount</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>AddEarningTests</td><td>WL-TC07: Số tiền âm → BadRequestException</td><td>addEarning_NegativeAmount</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>AddEarningTests</td><td>WL-TC08: Cộng thu nhập - driver không tồn tại → ResourceNotFoundException</td><td>addEarning_DriverNotFound</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>AddEarningTests</td><td>WL-TC09: Cộng thu nhập - ví chưa tồn tại → tự tạo ví rồi cộng</td><td>addEarning_CreatesWalletWhenMissing</td><td>1</td><td>0.002</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>GetTransactionsTests</td><td>WL-TC10: Lấy lịch sử giao dịch - map đủ field, order null → orderId null</td><td>getTransactions_Success</td><td>1</td><td>0.021</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>GetTransactionsTests</td><td>WL-TC11: Lấy giao dịch - chưa có ví → ResourceNotFoundException</td><td>getTransactions_WalletNotFound</td><td>1</td><td>0.005</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>WithdrawTests</td><td>WL-TC12: Rút tiền thành công - ArgumentCaptor kiểm tra Transaction</td><td>withdraw_Success</td><td>1</td><td>0.012</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>WithdrawTests</td><td>WL-TC13: Rút tiền null → BadRequestException</td><td>withdraw_NullAmount</td><td>1</td><td>0.004</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>WithdrawTests</td><td>WL-TC14: Rút tiền ≤ 0 → BadRequestException</td><td>withdraw_NonPositiveAmount</td><td>1</td><td>0.006</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>WithdrawTests</td><td>WL-TC15: Rút tiền - chưa có ví → ResourceNotFoundException</td><td>withdraw_WalletNotFound</td><td>1</td><td>0.007</td><td>Đạt</td></tr>
+<tr><td>WalletServiceImplTest</td><td>WithdrawTests</td><td>WL-TC16: Số dư không đủ → BadRequestException, không lưu gì</td><td>withdraw_InsufficientBalance</td><td>1</td><td>0.353</td><td>Đạt</td></tr>
+</tbody></table>
+<h2>Hai lớp đối chứng dùng để so sánh có và không dùng kỹ thuật giả lập</h2>
+<p>Kết quả của 2 lớp này lấy từ lần chạy toàn bộ 194 lượt. Thời gian khởi động nền tảng của lớp không dùng kỹ thuật giả lập là 39.654 mili giây, được tính vào thời gian của lớp nên không nằm trong cột thời gian của từng test case.</p>
+<table><thead><tr><th>Lớp kiểm thử</th><th>Nhóm con</th><th>Mã hoặc tên hiển thị</th><th>Phương thức kiểm thử</th><th>Số lượt</th><th>Thời gian (giây)</th><th>Kết quả</th></tr></thead><tbody>
+<tr><td>MockingDemoTest</td><td>không</td><td>DEMO-1: 10.000 lần login THẬT nhưng chỉ dùng Mock - không DB, không mạng</td><td>demo1_mockSpeed_10000Logins</td><td>1</td><td>15.332</td><td>Đạt</td></tr>
+<tr><td>MockingDemoTest</td><td>không</td><td>DEMO-2: Mô phỏng DB sập - Exception path chỉ kiểm thử được khi có Mock</td><td>demo2_mockExceptionPath_dbDown</td><td>1</td><td>0.052</td><td>Đạt</td></tr>
+<tr><td>MockingDemoTest</td><td>không</td><td>DEMO-3: Không phát sinh side-effect thật - email/OTP không bao giờ được gửi</td><td>demo3_mockIsolation_noRealSideEffect</td><td>1</td><td>0.041</td><td>Đạt</td></tr>
+<tr><td>SpringContextDemoTest</td><td>không</td><td>DEMO-4: Bắt buộc nạp toàn bộ Spring Context chỉ để chạy 1 test</td><td>demo4_springContextStartup</td><td>1</td><td>0.019</td><td>Đạt</td></tr>
+<tr><td>SpringContextDemoTest</td><td>không</td><td>DEMO-5: 10 lần login THẬT với H2 - chậm hơn Mock nhiều lần</td><td>demo5_realLogin_withH2</td><td>1</td><td>7.574</td><td>Đạt</td></tr>
+</tbody></table>
+<script>function loc(){var k=document.getElementById("q").value.toLowerCase();var rs=document.querySelectorAll("table tbody tr");for(var i=0;i<rs.length;i++){rs[i].style.display=(rs[i].innerText.toLowerCase().indexOf(k)>-1)?"":"none";}}</script>
+</body></html>

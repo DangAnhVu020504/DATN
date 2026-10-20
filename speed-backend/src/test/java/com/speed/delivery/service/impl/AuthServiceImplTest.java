@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 /**
- * Unit Tests cho AuthServiceImpl - 22 test cases.
+ * Unit Tests cho AuthServiceImpl - 26 test cases.
  *
  * <p>Kỹ thuật sử dụng:</p>
  * <ul>
@@ -215,6 +215,45 @@ class AuthServiceImplTest {
             assertThat(capturedUser.getPhone()).isEqualTo("0901234567");
             assertThat(capturedUser.getPassword()).isEqualTo("enc");
             assertThat(capturedUser.getIsActive()).isTrue();
+        }
+
+        @Test
+        @DisplayName("TC23 - Đăng ký role DRIVER → tạo hồ sơ Driver, không tạo Customer")
+        void register_DriverRole() {
+            // Arrange: Request đăng ký với role DRIVER
+            RegisterRequest driverRequest = RegisterRequest.builder()
+                    .email("driver@speed.vn").password("Password123")
+                    .fullName("Tran Van Tai Xe").phone("0909999999").role("DRIVER").build();
+            Role driverRole = Role.builder().id(3L).name("ROLE_DRIVER").build();
+            User savedDriverUser = User.builder()
+                    .id(9L).email("driver@speed.vn").password("encodedPassword")
+                    .fullName("Tran Van Tai Xe").phone("0909999999")
+                    .isActive(true).isVerified(false).roles(Set.of(driverRole))
+                    .createdAt(LocalDateTime.now()).build();
+
+            given(userRepository.existsByEmail("driver@speed.vn")).willReturn(false);
+            given(userRepository.existsByPhone("0909999999")).willReturn(false);
+            given(roleRepository.findByName("ROLE_DRIVER")).willReturn(Optional.of(driverRole));
+            given(passwordEncoder.encode(anyString())).willReturn("encodedPassword");
+            given(userRepository.save(any(User.class))).willReturn(savedDriverUser);
+            given(driverRepository.save(any(Driver.class)))
+                    .willReturn(Driver.builder().id(5L).user(savedDriverUser).build());
+            given(driverRepository.findByUserId(9L))
+                    .willReturn(Optional.of(Driver.builder().id(5L).user(savedDriverUser).build()));
+            mockTokenGeneration();
+
+            // Act
+            JwtResponse response = authService.register(driverRequest);
+
+            // Assert: Response map đúng driverId vừa tạo
+            assertThat(response.getAccessToken()).isEqualTo("access-token");
+            assertThat(response.getDriverId()).isEqualTo(5L);
+
+            // Verify: Role DRIVER → tạo hồ sơ Driver, KHÔNG tạo Customer profile
+            then(roleRepository).should(times(1)).findByName("ROLE_DRIVER");
+            then(driverRepository).should(times(1)).save(any(Driver.class));
+            then(customerRepository).should(never()).save(any(Customer.class));
+            then(emailService).should(times(1)).sendWelcomeEmail(eq("driver@speed.vn"), anyString());
         }
     }
 
@@ -549,5 +588,71 @@ class AuthServiceImplTest {
 
         // Verify
         then(userRepository).should(times(1)).findByEmail("test@speed.vn");
+    }
+
+    // ==================== UPDATE PROFILE ====================
+    @Nested
+    @DisplayName("Update Profile")
+    class UpdateProfileTests {
+
+        @Test
+        @DisplayName("TC24 - Cập nhật hồ sơ thành công - đủ trường")
+        void updateProfile_Success_AllFields() {
+            // Arrange: User tồn tại, SĐT mới chưa ai dùng
+            given(userRepository.findByEmail("test@speed.vn")).willReturn(Optional.of(testUser));
+            given(userRepository.existsByPhone("0912345678")).willReturn(false);
+            given(userRepository.save(any(User.class))).willReturn(testUser);
+
+            // Act: Cập nhật đủ 3 trường
+            UserResponse res = authService.updateProfile("test@speed.vn",
+                    UpdateProfileRequest.builder()
+                            .fullName("Nguyen Van Moi")
+                            .phone("0912345678")
+                            .avatarUrl("https://speed.vn/avatars/new.jpg")
+                            .build());
+
+            // Assert: Các trường được cập nhật đúng
+            assertThat(testUser.getFullName()).isEqualTo("Nguyen Van Moi");
+            assertThat(testUser.getPhone()).isEqualTo("0912345678");
+            assertThat(testUser.getAvatarUrl()).isEqualTo("https://speed.vn/avatars/new.jpg");
+            assertThat(res.getFullName()).isEqualTo("Nguyen Van Moi");
+
+            // Verify: Save + audit log
+            then(userRepository).should(times(1)).save(testUser);
+            then(auditLogService).should(times(1))
+                    .log(eq(1L), eq("UPDATE_PROFILE"), eq("User"), eq(1L), anyString());
+        }
+
+        @Test
+        @DisplayName("TC25 - Cập nhật SĐT trùng người khác → DuplicateResourceException")
+        void updateProfile_DuplicatePhone() {
+            // Arrange: SĐT mới đã có người dùng
+            given(userRepository.findByEmail("test@speed.vn")).willReturn(Optional.of(testUser));
+            given(userRepository.existsByPhone("0900000000")).willReturn(true);
+
+            // Act & Assert
+            assertThatThrownBy(() -> authService.updateProfile("test@speed.vn",
+                    UpdateProfileRequest.builder().phone("0900000000").build()))
+                    .isInstanceOf(DuplicateResourceException.class);
+
+            // Verify: Fail-fast - không save, không ghi audit log
+            then(userRepository).should(never()).save(any(User.class));
+            then(auditLogService).shouldHaveNoInteractions();
+        }
+
+        @Test
+        @DisplayName("TC26 - Cập nhật hồ sơ - user không tồn tại → ResourceNotFoundException")
+        void updateProfile_UserNotFound() {
+            // Arrange
+            given(userRepository.findByEmail("ghost@speed.vn")).willReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> authService.updateProfile("ghost@speed.vn",
+                    UpdateProfileRequest.builder().fullName("X Y").build()))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            // Verify: Không save gì
+            then(userRepository).should(never()).save(any(User.class));
+        }
     }
 }

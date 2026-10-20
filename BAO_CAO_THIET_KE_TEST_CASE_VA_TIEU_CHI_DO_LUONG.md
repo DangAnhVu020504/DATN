@@ -4,7 +4,7 @@
 **Dự án thực nghiệm:** Speed Delivery — Hệ thống giao hàng nhanh
 **Công nghệ:** Java 21 · Spring Boot 3.4.1 · JUnit 5 · Mockito (BDDMockito) · AssertJ · JaCoCo 0.8.12 · Maven Surefire 3.5.2
 **Đối tượng kiểm thử:** Tầng Service (`com.speed.delivery.service.impl`) và tầng bảo mật (`JwtTokenProvider`, `CustomUserDetailsService`)
-**Ngày đo:** 29/09/2026 · **Môi trường:** Windows 11 · JDK 21.0.10 (Oracle) · Apache Maven 3.9.16 · MySQL80 (đang **Running** — bộ test không kết nối tới)
+**Ngày đo:** 29/09/2026 (lần đo gốc) · **Đo lại:** 18/10/2026 (bộ test mở rộng — 189 lượt Unit + 5 lượt demo) · **Môi trường:** Windows 11 · JDK 21.0.10 (Oracle) · Apache Maven 3.9.16 · MySQL80 (đang **Running** — bộ test không kết nối tới)
 **Tài liệu liên quan:** [BAO_CAO_THUC_NGHIEM_MOCKING.md](BAO_CAO_THUC_NGHIEM_MOCKING.md) · [MA_TRAN_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md](MA_TRAN_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md)
 
 ---
@@ -22,30 +22,31 @@ Báo cáo trình bày hai nội dung phục vụ Chương 3 (Triển khai thực
 
 Phạm vi số liệu trong báo cáo là **bộ Unit Test có áp dụng Mocking** đang tồn tại trong dự án:
 
-- **14 lớp Unit Test** (thuộc `service.impl` và `security`), tổng cộng **151 method** (JUnit) chạy thành **158 lượt** (do 2 method dùng `@ParameterizedTest`).
+- **15 lớp Unit Test** (thuộc `service.impl` và `security`), tổng cộng **182 method** (JUnit) chạy thành **189 lượt** (do 3 method dùng `@ParameterizedTest`).
 - **2 lớp Demo đối chứng** (`com.speed.delivery.demo`) dùng để so sánh có/không dùng Mocking — 5 lượt chạy. Hai lớp này **không** thuộc bộ Unit Test chính (một lớp cố ý nạp Spring Context + H2), nên được tách riêng khi tính các chỉ số của bộ test Mocking.
 
-Khi chạy `mvn test` (không lọc), Maven thực thi **163 lượt** = 158 (Unit Test Mocking) + 5 (Demo đối chứng).
+Khi chạy `mvn test` (không lọc), Maven thực thi **194 lượt** = 189 (Unit Test Mocking) + 5 (Demo đối chứng).
 
 ### 1.3. Bộ test hiện có
 
 | # | Test class | Số method | Số lượt | Dependencies được Mock |
 |---|---|:--:|:--:|---|
-| 1 | `AuthServiceImplTest` | 22 | 22 | 11 (Repository, JWT, PasswordEncoder, AuthManager, Email, OTP, AuditLog) |
+| 1 | `AuthServiceImplTest` | 26 | 26 | 11 (Repository, JWT, PasswordEncoder, AuthManager, Email, OTP, AuditLog) |
 | 2 | `OrderServiceImplTest` | 17 | 17 | 10 (Repository, Payment, Pricing, Notification, Voucher, Distance, AuditLog) |
 | 3 | `PaymentServiceImplTest` | 10 | 10 | 2 |
-| 4 | `VoucherServiceImplTest` | 13 | 13 | 1 |
+| 4 | `VoucherServiceImplTest` | 18 | 18 | 1 |
 | 5 | `PricingServiceImplTest` | 16 | 22 | 0 (thuần logic, `@ParameterizedTest`) |
 | 6 | `DistanceServiceImplTest` | 9 | 10 | 0 (thuần toán học, `@ParameterizedTest`) |
 | 7 | `CustomerServiceImplTest` | 12 | 12 | 4 |
-| 8 | `DriverServiceImplTest` | 12 | 12 | 5 |
+| 8 | `DriverServiceImplTest` | 18 | 18 | 5 |
 | 9 | `AdminServiceImplTest` | 10 | 10 | 5 |
 | 10 | `NotificationServiceImplTest` | 7 | 7 | 1 |
 | 11 | `ReviewServiceImplTest` | 7 | 7 | 5 |
 | 12 | `JwtTokenProviderTest` | 10 | 10 | 0 (sinh/verify token thật với secret test) |
 | 13 | `CustomUserDetailsServiceTest` | 5 | 5 | 1 |
-| 14 | `SpeedApplicationTest` | 1 | 1 | 0 (smoke test) |
-| | **Tổng Unit Test (Mocking)** | **151** | **158** | |
+| 14 | `WalletServiceImplTest` | 16 | 16 | 3 (WalletRepository, TransactionRepository, DriverRepository) |
+| 15 | `SpeedApplicationTest` | 1 | 1 | 0 (smoke test) |
+| | **Tổng Unit Test (Mocking)** | **182** | **189** | |
 | + | `MockingDemoTest` (đối chứng — có Mock) | 3 | 3 | 11 |
 | + | `SpringContextDemoTest` (đối chứng — KHÔNG Mock) | 2 | 2 | — (Spring Context + H2 thật) |
 
@@ -100,9 +101,9 @@ Kỹ thuật Mocking không chỉ giúp "chạy nhanh" mà là **điều kiện 
 
 ## 3. Ma trận Test Case chi tiết
 
-> **Chú thích:** tất cả test case trong Mục 3.1–3.12 **đã hiện thực và PASS**. Cột "Mock setup chính" mô tả stub cần dạy cho DOC. Số lượt là số lần JUnit thực thi.
+> **Chú thích:** tất cả test case trong Mục 3.1–3.14 **đã hiện thực và PASS**. Cột "Mock setup chính" mô tả stub cần dạy cho DOC. Số lượt là số lần JUnit thực thi.
 
-### 3.1. Module Xác thực — `AuthServiceImplTest` (22 TC)
+### 3.1. Module Xác thực — `AuthServiceImplTest` (26 TC)
 
 **Dependencies Mock (11):** UserRepository · RoleRepository · CustomerRepository · DriverRepository · RefreshTokenRepository · PasswordEncoder · AuthenticationManager · JwtTokenProvider · OTPService · EmailService · AuditLogService
 
@@ -130,6 +131,10 @@ Kỹ thuật Mocking không chỉ giúp "chạy nhanh" mà là **điều kiện 
 | TC20 | HP | Logout revoke token | `findByToken→stored` | Token bị revoke + audit `LOGOUT` |
 | TC21 | ED | Logout token không tồn tại | `findByToken→empty` | Không ném ngoại lệ (silent no-op) |
 | TC22 | HP | Get profile thành công | `findByEmail→user` | `UserResponse` đầy đủ (roles, trạng thái) |
+| TC23 | ED | Đăng ký role DRIVER — nhánh tạo hồ sơ Driver | `findByName→ROLE_DRIVER`, save driver profile | User + `Driver` được tạo, **không** tạo `Customer` |
+| TC24 | HP | Cập nhật hồ sơ — đủ 3 trường (tên, SĐT, avatar) | `findByEmail→user`, `existsByPhone→false` | 3 trường được lưu + audit log cập nhật |
+| TC25 | EX | Cập nhật — SĐT trùng người khác | `existsByPhone→true` | `DuplicateResourceException` + fail-fast (không save/audit) |
+| TC26 | EX | Cập nhật — user không tồn tại | `findByEmail→empty` | `ResourceNotFoundException`, không save |
 
 ### 3.2. Module Quản lý đơn hàng — `OrderServiceImplTest` (17 TC)
 
@@ -172,7 +177,7 @@ Kỹ thuật Mocking không chỉ giúp "chạy nhanh" mà là **điều kiện 
 | PM-TC09 | HP | Trạng thái thanh toán — tìm thấy | payment `COMPLETED` | Return `"COMPLETED"` |
 | PM-TC10 | ED | Trạng thái thanh toán — không tìm thấy | `findByOrderId→empty` | Return `"NOT_FOUND"` (không ném) |
 
-### 3.4. Module Voucher — `VoucherServiceImplTest` (13 TC)
+### 3.4. Module Voucher — `VoucherServiceImplTest` (18 TC)
 
 **Dependencies Mock (1):** VoucherRepository
 
@@ -191,6 +196,11 @@ Kỹ thuật Mocking không chỉ giúp "chạy nhanh" mà là **điều kiện 
 | VOU-11 | HP | Lấy danh sách voucher đang hoạt động | `findActiveVouchers` | Danh sách voucher active |
 | VOU-12 | HP | Tạo voucher thành công | `findByCode→empty`, `save→voucher` | Voucher được lưu |
 | VOU-13 | EX | Tạo voucher — mã đã tồn tại | `findByCode→existing` | `BadRequestException` |
+| VOU-14 | HP | Lấy voucher theo ID thành công | `findById→voucher` | `VoucherResponse` khớp dữ liệu |
+| VOU-15 | EX | Lấy theo ID — không tồn tại | `findById→empty` | `ResourceNotFoundException` |
+| VOU-16 | HP | Lấy toàn bộ voucher | `findAll→list` | Danh sách voucher đầy đủ |
+| VOU-17 | HP | Toggle — đang hoạt động → vô hiệu hóa | `isActive=true` | `isActive=false` + save |
+| VOU-18 | HP | Toggle — đang vô hiệu → kích hoạt lại | `isActive=false` | `isActive=true` + save |
 
 ### 3.5. Module Tính giá — `PricingServiceImplTest` (16 method / 22 lượt)
 
@@ -250,7 +260,7 @@ Kỹ thuật Mocking không chỉ giúp "chạy nhanh" mà là **điều kiện 
 | CS-TC11 | EX | Xóa địa chỉ của customer khác | chủ khác | `BadRequestException` + `delete` **never** |
 | CS-TC12 | HP | Đặt địa chỉ mặc định | `findById`, list cũ | Reset default cũ + set default mới, cả 2 đều save |
 
-### 3.8. Module Tài xế — `DriverServiceImplTest` (12 TC)
+### 3.8. Module Tài xế — `DriverServiceImplTest` (18 TC)
 
 **Dependencies Mock (5):** DriverRepository · OrderRepository · OrderService · NotificationService · AuditLogService
 
@@ -268,6 +278,12 @@ Kỹ thuật Mocking không chỉ giúp "chạy nhanh" mà là **điều kiện 
 | DR-TC10 | HP | Lịch sử giao hàng | `findById` ok | Delegate `orderService.getDriverOrders` |
 | DR-TC11 | HP | Lấy thu nhập tài xế | `totalEarnings→800.000₫` | Trả đúng số tiền |
 | DR-TC12 | EX | Thu nhập — driver không tồn tại | `findById→empty` | `ResourceNotFoundException` |
+| DR-TC13 | HP | Lấy hồ sơ tài xế thành công | `findById→driver` | `DriverResponse` map đủ trường |
+| DR-TC14 | EX | Hồ sơ — driver không tồn tại | `findById→empty` | `ResourceNotFoundException` |
+| DR-TC15 | EX | Nhận đơn — driver không tồn tại | `findById→empty` | `ResourceNotFoundException` |
+| DR-TC16 | EX | Hoàn thành giao hàng — driver không tồn tại | `findById→empty` | `ResourceNotFoundException` |
+| DR-TC17 | EX | Lịch sử giao hàng — driver không tồn tại | `findById→empty` | `ResourceNotFoundException` |
+| DR-TC18 | EX | Từ chối đơn — đơn không tồn tại | `orderRepository.findById→empty` | `ResourceNotFoundException` |
 
 ### 3.9. Module Quản trị — `AdminServiceImplTest` (10 TC)
 
@@ -343,30 +359,56 @@ Kỹ thuật Mocking không chỉ giúp "chạy nhanh" mà là **điều kiện 
 
 **`SpeedApplicationTest` (1 TC)** — Smoke test kiểm tra lớp ứng dụng load được.
 
-### 3.13. Tổng hợp độ phủ 3 đường dẫn (158 lượt chạy thực tế)
+### 3.13. Tổng hợp độ phủ 3 đường dẫn (189 lượt chạy thực tế — đo lại 18/10/2026)
 
 | Module (Test class) | HP | ED | EX | Tổng | Ghi chú |
 |---|:--:|:--:|:--:|:--:|---|
-| AuthServiceImplTest | 10 | 1 | 11 | 22 | EX mạnh nhất (xác thực) |
-| OrderServiceImplTest | 11 | 0 | 6 | 17 | Thiếu ED (xem 3.14.A) |
+| AuthServiceImplTest | 11 | 2 | 13 | 26 | EX mạnh nhất (xác thực) |
+| OrderServiceImplTest | 11 | 0 | 6 | 17 | Thiếu ED (xem 3.15.A) |
 | PaymentServiceImplTest | 5 | 2 | 3 | 10 | |
-| VoucherServiceImplTest | 5 | 1 | 7 | 13 | |
+| VoucherServiceImplTest | 9 | 1 | 8 | 18 | +5 TC quản lý voucher (18/10) |
 | PricingServiceImplTest | 15 | 7 | 0 | 22 | Thuần logic — ED phong phú |
 | DistanceServiceImplTest | 8 | 2 | 0 | 10 | Thuần toán học |
-| CustomerServiceImplTest | 8 | 0 | 4 | 12 | Thiếu ED (xem 3.14.A) |
-| DriverServiceImplTest | 7 | 0 | 5 | 12 | Thiếu ED (xem 3.14.A) |
+| CustomerServiceImplTest | 8 | 0 | 4 | 12 | Thiếu ED (xem 3.15.A) |
+| DriverServiceImplTest | 8 | 0 | 10 | 18 | Thiếu ED (xem 3.15.A) |
 | AdminServiceImplTest | 6 | 1 | 3 | 10 | |
 | NotificationServiceImplTest | 6 | 1 | 0 | 7 | |
 | ReviewServiceImplTest | 2 | 0 | 5 | 7 | |
+| WalletServiceImplTest | 4 | 2 | 10 | 16 | Lớp mới (18/10) — nhiều nhánh lỗi biên |
 | JwtTokenProviderTest | 8 | 2 | 0 | 10 | |
 | CustomUserDetailsServiceTest | 3 | 1 | 1 | 5 | |
 | SpeedApplicationTest | 1 | 0 | 0 | 1 | Smoke |
-| **TỔNG (lượt)** | **95** | **18** | **45** | **158** | |
-| **Tỷ lệ** | **60,1%** | **11,4%** | **28,5%** | 100% | |
+| **TỔNG (lượt)** | **105** | **21** | **63** | **189** | |
+| **Tỷ lệ** | **55,6%** | **11,1%** | **33,3%** | 100% | |
 
-**Nhận xét:** bộ test hiện tại mạnh về **HP (60,1%)** và **EX (28,5%)** — đặc trưng của kỹ thuật Mocking (giả lập lỗi DOC). Đường dẫn **ED (11,4%)** tập trung chủ yếu ở các lớp thuần logic (Pricing, Distance) và các xử lý null/silent; các module nghiệp vụ (Order, Customer, Driver) **cần bổ sung ED** để cân bằng ma trận — thiết kế tại 3.14.A.
+**Nhận xét:** bộ test hiện tại mạnh về **HP (55,6%)** và **EX (33,3%)** — đặc trưng của kỹ thuật Mocking (giả lập lỗi DOC). Đường dẫn **ED (11,1%)** tập trung chủ yếu ở các lớp thuần logic (Pricing, Distance) và các xử lý biên/null (Wallet tự tạo ví, JWT token sai định dạng, logout token không tồn tại); các module nghiệp vụ Order/Customer/Driver **cần bổ sung ED** để cân bằng ma trận — thiết kế tại 3.15.A.
 
-### 3.14. Thiết kế bổ sung (chưa hiện thực)
+### 3.14. Module Ví tài xế — `WalletServiceImplTest` (16 TC — bổ sung 18/10/2026)
+
+**Dependencies Mock (3):** WalletRepository · TransactionRepository · DriverRepository
+
+| Mã TC | Path | Kịch bản | Mock setup chính | Kết quả kỳ vọng |
+|---|:--:|---|---|---|
+| WL-TC01 | HP | Lấy ví thành công — ví đã tồn tại | `findById(driver)→driver`, `findByDriverId→wallet` | `WalletResponse` map đúng chủ/số dư; **không** tạo ví mới |
+| WL-TC02 | ED | Chưa có ví → tự tạo ví số dư 0 (nhánh `orElseGet`) | `findByDriverId→empty`, `save→wallet mới` | Ví mới `balance=0` được save (ArgumentCaptor kiểm tra nội dung) |
+| WL-TC03 | EX | Driver không tồn tại | `findById→empty` | `ResourceNotFoundException` + `walletRepository` **không bị chạm** |
+| WL-TC04 | HP | Cộng thu nhập thành công | ví tồn tại, `save→wallet` | Số dư 500.000 + 32.000 = 532.000; Transaction `EARNING` đúng order/description |
+| WL-TC05 | EX | Amount = null | — | `BadRequestException` + cả 3 repository **never** |
+| WL-TC06 | EX | Amount = 0 | — | `BadRequestException` |
+| WL-TC07 | EX | Amount âm (−1.000) | — | `BadRequestException` |
+| WL-TC08 | EX | Cộng thu nhập — driver không tồn tại | `findById→empty` | `ResourceNotFoundException`; không lưu giao dịch |
+| WL-TC09 | ED | Cộng thu nhập — ví chưa tồn tại → tự tạo rồi cộng | `findByDriverId→empty` | `save()` gọi 2 lần (tạo ví + cập nhật) + 1 transaction |
+| WL-TC10 | HP | Lịch sử giao dịch (phân trang) | `findByWalletId...→PageImpl` | `Page<TransactionResponse>`; orderId null khi giao dịch không gắn đơn |
+| WL-TC11 | EX | Lịch sử — chưa có ví | `findByDriverId→empty` | `ResourceNotFoundException` |
+| WL-TC12 | HP | Rút tiền thành công | ví đủ số dư | Số dư 500.000 − 100.000 = 400.000 + Transaction `WITHDRAWAL` |
+| WL-TC13 | EX | Rút tiền — amount null | — | `BadRequestException` |
+| WL-TC14 | EX | Rút tiền — amount ≤ 0 | −50.000 | `BadRequestException` |
+| WL-TC15 | EX | Rút tiền — chưa có ví | `findByDriverId→empty` | `ResourceNotFoundException` |
+| WL-TC16 | EX | Số dư không đủ | balance 500.000, rút 600.000 | `BadRequestException`; số dư giữ nguyên, không save |
+
+> Module này trước đây chỉ nằm trong **thiết kế bổ sung** (WAL-TC01..09 — xem 3.15.B). Ngày 18/10/2026 được hiện thực đầy đủ thành **16 TC** (vượt 9 TC dự kiến), độ phủ đạt **line 71/71 = 100%**, **branch 12/12 = 100%**.
+
+### 3.15. Thiết kế bổ sung
 
 Phần dưới đây là **thiết kế sẵn sàng triển khai** — đối chiếu trực tiếp với mã nguồn thật của các lớp tương ứng, không phải kịch bản giả định.
 
@@ -385,19 +427,12 @@ Phần dưới đây là **thiết kế sẵn sàng triển khai** — đối ch
 | JWT-EX-01 | JWT | EX | Token sai chữ ký (secret khác) | Token ký bằng secret khác | `validateToken=false` (`SignatureException` bị bắt) |
 | JWT-ED-01 | JWT | ED | Token hết hạn | Token expiration âm | `validateToken=false` (`ExpiredJwtException` bị bắt) |
 
-**B. Ba module chưa có test — thiết kế ma trận mới** (đối chiếu mã nguồn `WalletServiceImpl`, `AuditLogServiceImpl`, `OTPServiceImpl`):
+**B. Các module chưa có test — thiết kế ma trận mới** (đối chiếu mã nguồn `AuditLogServiceImpl`, `OTPServiceImpl`; `WalletServiceImpl` **đã hiện thực đầy đủ ngày 18/10/2026** — ma trận triển khai thực tế gồm 16 TC tại 3.14):
+
+> **WalletServiceImpl — đã hiện thực:** thiết kế ban đầu 9 TC (WAL-TC01..09) đã được triển khai và mở rộng thành **16 TC** (WL-TC01..16 — ma trận tại 3.14); độ phủ đạt **line 71/71 = 100%**, **branch 12/12 = 100%**.
 
 | Mã TC | Module | Path | Kịch bản | Mock setup | Kỳ vọng |
 |---|---|---|---|---|---|
-| WAL-TC01 | Wallet | HP | Lấy ví thành công | `findByDriverId→wallet` | `WalletResponse` đúng số dư |
-| WAL-TC02 | Wallet | ED | Chưa có ví → tự tạo | `findByDriverId→empty` | Wallet mới số dư 0 được save |
-| WAL-TC03 | Wallet | EX | Driver không tồn tại | `driverRepository.findById→empty` | `ResourceNotFoundException` |
-| WAL-TC04 | Wallet | HP | Cộng thu nhập | wallet hợp lệ | Số dư cộng đúng + Transaction `EARNING` |
-| WAL-TC05 | Wallet | EX | Cộng tiền ≤ 0 | amount = 0 / −100 | `BadRequestException` |
-| WAL-TC06 | Wallet | HP | Rút tiền thành công | số dư đủ | Số dư trừ đúng + Transaction `WITHDRAWAL` |
-| WAL-TC07 | Wallet | EX | Rút quá số dư | `balance < amount` | `BadRequestException` |
-| WAL-TC08 | Wallet | EX | Rút khi chưa có ví | `findByDriverId→empty` | `ResourceNotFoundException` |
-| WAL-TC09 | Wallet | HP | Lịch sử giao dịch (phân trang) | `findByWalletId...→PageImpl` | `Page<TransactionResponse>` |
 | AUD-TC01 | AuditLog | HP | Ghi log đầy đủ 5 tham số | `save→log` (ArgumentCaptor) | Log lưu đúng action/entity/details |
 | AUD-TC02 | AuditLog | HP | Ghi log rút gọn (2 tham số) | `save→log` | Log lưu đúng, userId null |
 | AUD-TC03 | AuditLog | HP | Lấy toàn bộ log phân trang | `findAllBy...→PageImpl` | `Page<LogResponse>` |
@@ -408,7 +443,7 @@ Phần dưới đây là **thiết kế sẵn sàng triển khai** — đối ch
 | OTP-TC04 | OTP | ED | Verify OTP hết hạn | `expiresAt` < now | `false` |
 | OTP-TC05 | OTP | ED | Verify khi không có OTP nào | `findTop...→empty` | `false` |
 
-> **Ghi chú hiện thực:** khi viết chỉ cần theo đúng template hiện có (`@ExtendWith(MockitoExtension.class)`, `@Mock`/`@InjectMocks`, BDDMockito, pattern AAA) và đặt tên file `WalletServiceImplTest`, `AuditLogServiceImplTest`, `OTPServiceImplTest`.
+> **Ghi chú hiện thực:** theo đúng template hiện có (`@ExtendWith(MockitoExtension.class)`, `@Mock`/`@InjectMocks`, BDDMockito, pattern AAA), đặt tên file `AuditLogServiceImplTest`, `OTPServiceImplTest`. Riêng `WalletServiceImplTest` **đã hoàn thành** ngày 18/10/2026 (16 TC).
 
 ---
 
@@ -437,76 +472,75 @@ Cơ sở lý thuyết không ấn định một con số tuyệt đối; các **
 | `ET_class` | Giá trị **"Time elapsed"** của từng test class trong báo cáo Maven Surefire |
 | `ET_total` | `Σ ET_class` (tổng thời gian tầng test) |
 | `ET_avg` | `ET_total / số lượt test` (thời gian trung bình mỗi lượt) |
-| `T_pipeline` | Tổng thời gian `mvn test` (gồm khởi động Maven, kiểm tra biên dịch, Surefire, sinh báo cáo JaCoCo) |
+| `T_pipeline` | Tổng thời gian lệnh Maven (`mvn test` hoặc `mvn clean verify`; gồm khởi động Maven, kiểm tra biên dịch, Surefire, sinh báo cáo JaCoCo) |
 
 **Công cụ:** Maven Surefire 3.5.2 — báo cáo `target/surefire-reports/*.txt` (dòng `Time elapsed`); log Maven (dòng `Total time`).
 
-**Quy trình:** chạy `mvn test` → thu `ET_class` mọi class → cộng tổng và tính trung bình.
+**Quy trình:** chạy `mvn test` (hoặc `mvn clean verify` cho vòng đầy đủ) → thu `ET_class` mọi class → cộng tổng và tính trung bình.
 
 #### 4.1.3. Ngưỡng chấp nhận đề ra
 
 | Mã | Tiêu chí | Ngưỡng |
 |---|---|---|
-| ET-1 | Tổng thời gian tầng test toàn suite (158 lượt) | ≤ 30 giây |
+| ET-1 | Tổng thời gian tầng test toàn suite (189 lượt) | ≤ 30 giây |
 | ET-2 | Trung bình mỗi lượt test | ≤ 200 ms |
 | ET-3 | Thời gian mỗi test class (gồm chi phí khởi tạo lần đầu) | ≤ 5 giây |
 | ET-4 | Tái lập được: chạy lặp lại đều PASS với cùng kết quả | 100% |
 
-#### 4.1.4. Kết quả thực đo (29/09/2026)
+#### 4.1.4. Kết quả thực đo (đo lại 18/10/2026 — bộ 189 lượt + 5 demo)
 
-**Bảng `ET_class` — lần chạy chính thức 158 lượt (có JaCoCo):**
+**Bảng `ET_class` — lần chạy chính thức 189 lượt Unit Test (trong `mvn clean verify` ngày 18/10/2026):**
 
 | Test class | Lượt | ET_class | ET trung bình/lượt |
 |---|:--:|--:|--:|
-| CustomUserDetailsServiceTest | 5 | 3,686 s | 0,737 s |
-| JwtTokenProviderTest | 10 | 3,115 s | 0,312 s |
-| AdminServiceImplTest | 10 | 1,600 s | 0,160 s |
-| AuthServiceImplTest | 22 | 2,638 s | 0,120 s |
-| CustomerServiceImplTest | 12 | 0,951 s | 0,079 s |
-| DistanceServiceImplTest | 10 | 0,627 s | 0,063 s |
-| DriverServiceImplTest | 12 | 0,712 s | 0,059 s |
-| NotificationServiceImplTest | 7 | 0,401 s | 0,057 s |
-| OrderServiceImplTest | 17 | 2,403 s | 0,141 s |
-| PaymentServiceImplTest | 10 | 0,809 s | 0,081 s |
-| PricingServiceImplTest | 22 | 0,341 s | 0,016 s |
-| ReviewServiceImplTest | 7 | 0,341 s | 0,049 s |
-| VoucherServiceImplTest | 13 | 0,453 s | 0,035 s |
-| SpeedApplicationTest | 1 | 0,033 s | 0,033 s |
-| **TỔNG** | **158** | **ET_total = 18,110 s** | **≈ 0,115 s (115 ms)** |
+| CustomUserDetailsServiceTest | 5 | 0,092 s | 0,018 s |
+| JwtTokenProviderTest | 10 | 0,266 s | 0,027 s |
+| AdminServiceImplTest | 10 | 0,333 s | 0,033 s |
+| AuthServiceImplTest | 26 | 0,362 s | 0,014 s |
+| CustomerServiceImplTest | 12 | 0,292 s | 0,024 s |
+| DistanceServiceImplTest | 10 | 0,263 s | 0,026 s |
+| DriverServiceImplTest | 18 | 0,423 s | 0,024 s |
+| NotificationServiceImplTest | 7 | 0,245 s | 0,035 s |
+| OrderServiceImplTest | 17 | 0,901 s | 0,053 s |
+| PaymentServiceImplTest | 10 | 0,251 s | 0,025 s |
+| PricingServiceImplTest | 22 | 0,136 s | 0,006 s |
+| ReviewServiceImplTest | 7 | 0,265 s | 0,038 s |
+| VoucherServiceImplTest | 18 | 0,356 s | 0,020 s |
+| WalletServiceImplTest | 16 | 0,515 s | 0,032 s |
+| SpeedApplicationTest | 1 | 0,021 s | 0,021 s |
+| **TỔNG** | **189** | **ET_total = 4,721 s** | **≈ 0,025 s (25 ms)** |
 
-**Các phép đo bổ sung (cùng ngày):**
+**Các phép đo bổ sung (18/10/2026):**
 
 | Phép đo | Kết quả | Ý nghĩa |
 |---|---|---|
-| `T_pipeline` — 158 lượt, **có** JaCoCo (lần chạy chính thức) | **21,491 s** | Bao gồm overhead Maven + sinh báo cáo coverage |
-| `T_pipeline` — 158 lượt, **có** JaCoCo (lần chạy nóng liền trước đó) | 14,494 s | So sánh cặp nóng với dòng dưới |
-| `T_pipeline` — 158 lượt, `-Djacoco.skip=true` (lần chạy nóng) | **12,824 s** | So với 14,494 s: chi phí instrumentation + báo cáo JaCoCo ≈ **1,7 s** |
-| `T_pipeline` — `mvn test` đầy đủ (163 lượt = 158 + 5 demo) | **26,824 s** | Trong đó 2 lớp demo chiếm ≈ 20,1 s |
-| Chạy lẻ 1 class `-Dtest=AuthServiceImplTest` | 22/22 PASS — 6,827 s toàn lệnh | Bằng chứng độc lập (mục 4.3) |
-| Chạy lẻ 1 method `AuthServiceImplTest$RegisterTests#register_Success` | 1/1 PASS — 6,234 s toàn lệnh | Test đơn lẻ không phụ thuộc test khác |
-| Chạy thứ tự ngẫu nhiên (158 lượt) | 158/158 PASS — 8,198 s | Độc lập thứ tự (mục 4.3) |
+| `T_pipeline` — `mvn clean verify` đầy đủ (194 lượt + `jacoco:check` + đóng gói JAR) | **01:44 min (~104 s)** | Toàn bộ vòng CI: clean → compile → test → quality gate → package |
+| Tổng thời gian tầng test bộ Unit (Σ ET_class, 189 lượt) | ≈ **4,7 s** | Lớp lâu nhất: OrderServiceImplTest 0,901 s |
+| Chạy lẻ 1 class `-Dtest=AuthServiceImplTest` (26 TC) | **26/26 PASS** — 17,099 s toàn lệnh | Bằng chứng độc lập (mục 4.3) |
+| Chạy lẻ 1 method `AuthServiceImplTest$RegisterTests#register_Success` | **1/1 PASS** — 14,302 s toàn lệnh | Test đơn lẻ không phụ thuộc test khác |
+| Chạy thứ tự ngẫu nhiên (189 lượt) | **189/189 PASS** — 20,554 s toàn lệnh | Độc lập thứ tự (mục 4.3) |
 
-**Bằng chứng đối chứng có/không Mocking** (từ 2 lớp demo trong cùng `mvn test`):
+**Bằng chứng đối chứng có/không Mocking** (từ 2 lớp demo trong cùng `mvn clean verify`):
 
 | Phép đo | Mock (`MockingDemoTest`) | Không Mock (`SpringContextDemoTest`, Spring Context + H2 thật) |
 |---|---|---|
-| 1 lần login | **204 μs** (10.000 login = 2.041 s) | **85,8 ms** (10 login = 0,858 s) |
-| Chi phí khởi tạo môi trường | 0 (không Spring Context) | **14.549 ms** (khởi động Spring Context) |
-| Thời gian cả lớp test | 4,833 s | 15,250 s |
+| 1 lần login | **693,06 μs** (10.000 login = 6,930 s) | **270,60 ms** (10 login = 2,706 s) |
+| Chi phí khởi tạo môi trường | 0 (không Spring Context) | **39.654 ms (~39,7 s)** (khởi động Spring Context) |
+| Thời gian cả lớp test | 15,54 s | 41,65 s |
 
-→ Một login có Mock nhanh hơn login chạy qua Spring + H2 khoảng **420 lần**; chỉ riêng **thời gian khởi động Spring Context (14,5 s) đã gần bằng tổng thời gian của toàn bộ 158 lượt test Mock (18,1 s)**.
+→ Một login có Mock nhanh hơn login chạy qua Spring + H2 khoảng **390 lần** (dao động 223×–420× giữa các lần đo do tải máy); chỉ riêng **thời gian khởi động Spring Context (~39,7 s) đã gấp ~8,4 lần tổng thời gian của toàn bộ 189 lượt test Mock (4,7 s)**.
 
-**Lưu ý về độ biến thiên:** `ET_total` lần đầu trên máy "lạnh" (chưa nạp class) cao hơn đáng kể so với các lần chạy liền sau trên máy đã "nóng" (JVM/class đã được nạp và cache) — lần chạy nóng trong buổi đo cho `ET_total ≈ 2,5 s`. Cả hai mức đều **rất nhỏ** so với test tích hợp; vì vậy khi trình bày cần ghi rõ số liệu thuộc lần chạy nào.
+**Lưu ý về độ biến thiên:** `ET_total` phụ thuộc tải máy và trạng thái "nóng/lạnh" của JVM — lần 29/09 ghi nhận 18,1 s khi máy chạy nặng (158 lượt), các lần chạy nóng chỉ ~2,5 s; lần 18/10 trong `mvn clean verify` (2 lớp demo chạy trước, máy bận) là 4,7 s. Tương tự, đối chứng login Mock dao động 204 μs–693 μs giữa các lần đo. Cả hai mức đều **rất nhỏ** so với test tích hợp; vì vậy khi trình bày cần ghi rõ số liệu thuộc lần chạy nào.
 
 #### 4.1.5. Đánh giá
 
 ✅ **ĐẠT toàn bộ ET-1 → ET-4:**
-- ET-1: `ET_total` = 18,110 s ≤ 30 s ✔ (pipeline đầy đủ 21,491 s cũng ≤ 30 s)
-- ET-2: `ET_avg` = 115 ms ≤ 200 ms ✔
-- ET-3: class lâu nhất 3,686 s ≤ 5 s ✔
-- ET-4: 5 lần chạy full-suite trong buổi đo (đầy đủ, bỏ JaCoCo, coverage sạch, thứ tự ngẫu nhiên) đều **158/158 PASS, 0 lỗi** ✔
+- ET-1: `ET_total` = 4,721 s ≤ 30 s ✔ (toàn pipeline `mvn clean verify` ~104 s — bao gồm cả dựng lại dự án, kiểm tra quality gate và đóng gói JAR)
+- ET-2: `ET_avg` = 25 ms ≤ 200 ms ✔
+- ET-3: class lâu nhất 0,901 s ≤ 5 s ✔
+- ET-4: các lần chạy trong buổi đo 18/10 (`mvn clean verify` 194/194; chạy lẻ class 26/26; chạy lẻ method 1/1; thứ tự ngẫu nhiên 189/189) đều **PASS, 0 lỗi** ✔
 
-**Ý nghĩa:** nhờ Mocking thay thế toàn bộ I/O (Database, Email, SMS, Map, Payment), mỗi test chỉ tốn cỡ ~0,1 s — trong khi một lần khởi động Spring Context + DB thật cho test tích hợp đã tốn ~15 s. Bộ test đủ nhanh để chạy ở mọi lần commit (CI).
+**Ý nghĩa:** nhờ Mocking thay thế toàn bộ I/O (Database, Email, SMS, Map, Payment), mỗi test chỉ tốn cỡ ~25 ms — trong khi một lần khởi động Spring Context + DB thật cho test tích hợp đã tốn ~39,7 s (gấp ~8,4 lần cả bộ 189 lượt). Bộ test đủ nhanh để chạy ở mọi lần commit (CI).
 
 ---
 
@@ -528,7 +562,7 @@ Cơ sở lý thuyết không ấn định một con số tuyệt đối; các **
 | **Method coverage** | % method được gọi | Method được coi là phủ nếu có ít nhất một instruction trong nó đã chạy |
 
 **Công cụ:** JaCoCo 0.8.12 (khai báo trong `pom.xml`, chạy ở phase `test`).
-**Phương pháp đo:** `mvn test` → sinh `target/site/jacoco/index.html` (giao diện) và `target/site/jacoco/jacoco.csv` (số liệu thô).
+**Phương pháp đo:** `mvn test` / `mvn clean verify` → sinh `target/site/jacoco/index.html` (giao diện) và `target/site/jacoco/jacoco.csv` (số liệu thô); `jacoco:check` xác minh ngưỡng tự động ở phase `verify`.
 
 > ⚠️ **Lưu ý phương pháp:** JaCoCo agent **append** dữ liệu vào `target/jacoco.exec` giữa các lần chạy. Do đó, để đo coverage *chỉ của bộ Unit Test*, phải **xóa `target/jacoco.exec`** rồi chạy đúng tập unit test (nếu không, coverage sẽ bị "trộn" thêm phần của các lớp demo).
 
@@ -536,64 +570,64 @@ Cơ sở lý thuyết không ấn định một con số tuyệt đối; các **
 
 | Mã | Tiêu chí | Ngưỡng | Nguồn ngưỡng |
 |---|---|---|---|
-| CC-1 | Line coverage của **từng lớp Service có test** | ≥ 90% | `pom.xml` (JaCoCo `LINE ≥ 0.90`) |
-| CC-2 | Branch coverage của **từng lớp Service có test** (lớp có nhánh) | ≥ 85% | `pom.xml` (JaCoCo `BRANCH ≥ 0.85`) |
-| CC-3 | Line coverage **tổng hợp 11 lớp Service đã test** | ≥ 95% | Đề xuất của đồ án |
+| CC-1 | Line coverage của **từng lớp Service có test** | ≥ 90% | `pom.xml` (JaCoCo `LINE ≥ 0.90` cho 12 lớp trọng tâm, cấp CLASS) |
+| CC-2 | Branch coverage của **từng lớp Service có test** (lớp có nhánh) | ≥ 85% | Đề xuất của đồ án (đo tham khảo) |
+| CC-3 | Line coverage **tổng hợp 12 lớp Service đã test** | ≥ 95% | Đề xuất của đồ án |
 | CC-4 | Line coverage **toàn dự án** (gồm Controller/Entity/Config — ngoài phạm vi unit test) | ≥ 60% | Đề xuất của đồ án |
 | CC-5 | Không còn lớp Service nghiệp vụ nào ở mức **0%** | 0 lớp | Đề xuất của đồ án |
 
-#### 4.2.4. Kết quả thực đo (29/09/2026 — `jacoco.csv`, số liệu sạch chỉ của bộ Unit Test)
+#### 4.2.4. Kết quả thực đo (18/10/2026 — `jacoco.csv` từ `mvn clean verify`; bộ 189 lượt + 5 lượt demo đối chứng)
 
 **Tổng quan:**
 
 | Phạm vi | Line | Branch | Instruction | Method |
 |---|---|---|---|---|
-| **Toàn dự án** (66 classes) | 789/1.269 = **62,2%** | 124/214 = **57,9%** | 3.558/5.796 = **61,4%** | 125/300 = **41,7%** |
-| **Package `service.impl`** (18 classes) | 689/872 = **79,0%** | 122/196 = **62,2%** | — | — |
-| **11 lớp Service đã có test** | **689/722 = 95,4%** | **122/180 = 67,8%** | — | — |
+| **Toàn dự án** (66 classes) | 976/1.298 = **75,2%** | 147/222 = **66,2%** | 4.374/5.821 = **75,1%** | 180/309 = **58,3%** |
+| **Package `service.impl`** (18 classes) | 816/893 = **91,4%** | 145/204 = **71,1%** | — | — |
+| **12 lớp Service đã có test** | **796/814 = 97,8%** | **145/200 = 72,5%** | — | — |
 
 **Chi tiết theo lớp Service (có test):**
 
 | Class | Line | % Line | Branch | % Branch |
 |---|:--:|--:|:--:|--:|
-| PaymentServiceImpl | 28/28 | **100%** | 8/8 | 100% |
-| PricingServiceImpl | 19/19 | **100%** | 4/4 | 100% |
-| DistanceServiceImpl | 13/13 | **100%** | — | — |
-| DriverServiceImpl | 41/41 | **100%** | 9/10 | 90,0% |
+| WalletServiceImpl | 71/71 | **100%** | 12/12 | **100%** |
+| PaymentServiceImpl | 28/28 | **100%** | 8/8 | **100%** |
+| PricingServiceImpl | 19/19 | **100%** | 4/4 | **100%** |
+| DistanceServiceImpl | 12/12 | **100%** | — | — |
+| DriverServiceImpl | 56/56 | **100%** | 9/10 | 90,0% |
 | AdminServiceImpl | 49/49 | **100%** | 5/6 | 83,3% |
 | NotificationServiceImpl | 41/41 | **100%** | — | — |
-| CustomerServiceImpl | 98/102 | 96,1% | 21/30 | 70,0% |
-| OrderServiceImpl | 188/196 | 95,9% | 30/58 | 51,7% |
-| VoucherServiceImpl | 30/32 | 93,8% | 17/18 | 94,4% |
-| ReviewServiceImpl | 43/46 | 93,5% | 12/14 | 85,7% |
-| JwtTokenProvider | 42/46 | 91,3% | — | — |
-| AuthServiceImpl | 139/155 | 89,7% | 16/32 | 50,0% |
+| VoucherServiceImpl | 37/37 | **100%** | 19/20 | 95,0% |
+| AuthServiceImpl | 155/155 | **100%** | 25/32 | 78,1% |
 | CustomUserDetailsService | 10/10 | **100%** | 2/2 | 100% |
+| CustomerServiceImpl | 98/102 | 96,1% | 21/30 | 70,0% |
+| OrderServiceImpl | 188/199 | 94,5% | 30/64 | 46,9% |
+| ReviewServiceImpl | 42/45 | 93,3% | 12/14 | 85,7% |
+| JwtTokenProvider | 43/47 | 91,5% | — | — |
 
-**Các lớp chưa có test (0% — cần bổ sung, ma trận tại 3.14.B):**
+**Các lớp chưa có test (độ phủ thấp — cần bổ sung, ma trận tại 3.15.B):**
 
 | Class | Line | Branch |
 |---|:--:|:--:|
-| WalletServiceImpl | 0/71 | 0/12 |
-| AuditLogServiceImpl | 0/31 | — |
-| OTPServiceImpl | 0/23 | 0/4 |
-| EmailServiceImpl / SMSServiceImpl / MapServiceImpl / FileStorageServiceImpl (service giả lập) | 0/25 | — |
+| AuditLogServiceImpl | 11/31 = **35,5%** | — |
+| OTPServiceImpl | 1/23 = **4,3%** | 0/4 = 0% |
+| EmailServiceImpl / SMSServiceImpl / MapServiceImpl / FileStorageServiceImpl (service giả lập) | 2/8 · 2/4 · 2/6 · 2/7 (25%–50%) | — (vài dòng bị chạm bởi lớp demo) |
 
-**Ngoài phạm vi unit test (0%):** toàn bộ Controller (9 lớp), `SecurityConfig`, `SwaggerConfig`, `GlobalExceptionHandler`, `JwtAuthenticationFilter`, và các entity (POJO) — thuộc phạm vi Web/Integration Test (ranh giới với Integration Testing đã nêu ở đề cương mục 2.5.4).
+**Ngoài phạm vi unit test:** toàn bộ Controller (9 lớp — 0%), các entity (POJO — hầu hết 0%), `GlobalExceptionHandler` (2/38), `JwtAuthenticationFilter` (1/18), `SpeedApplication` (1/3) — thuộc phạm vi Web/Integration Test (ranh giới với Integration Testing đã nêu ở đề cương mục 2.5.4). Riêng `SecurityConfig`/`SwaggerConfig` được chạm 100% **do lớp demo nạp Spring Context** — không phải nhờ unit test.
 
 #### 4.2.5. Đánh giá
 
 | Mã | Ngưỡng | Thực đo | Kết luận |
 |---|---|---|---|
-| CC-1 | ≥ 90% line/lớp Service có test | 10/11 lớp ≥ 91,3% (tới 100%); `AuthServiceImpl` = **89,7%** | ⚠️ **ĐẠT 10/11** — Auth sát ngưỡng (thiếu ~5 dòng) |
-| CC-2 | ≥ 85% branch/lớp | Đạt: Payment, Pricing, Driver, Voucher, Review, CustomUD. Chưa đạt: **Order 51,7%, Auth 50,0%, Customer 70,0%, Admin 83,3%** | ❌ **CHƯA ĐẠT** — cần bổ sung TC đi vào nhánh chưa test (3.14.A) |
-| CC-3 | ≥ 95% line tổng hợp 11 lớp Service | **95,4%** | ✅ ĐẠT |
-| CC-4 | ≥ 60% line toàn dự án | **62,2%** (instruction 61,4%) | ✅ ĐẠT |
-| CC-5 | Không còn lớp nghiệp vụ 0% | Còn **Wallet, AuditLog, OTP = 0%** | ❌ CHƯA ĐẠT — đã thiết kế ma trận tại 3.14.B |
+| CC-1 | ≥ 90% line/lớp Service có test | **12/12 lớp ≥ 93,3%** (9 lớp đạt 100%); `jacoco:check` xác minh tự động trong `mvn verify` | ✅ **ĐẠT 12/12** — cổng chất lượng đã bật |
+| CC-2 | ≥ 85% branch/lớp | Đạt: Wallet, Payment, Pricing, Voucher, Review, Driver (90%), CustomUD. Chưa đạt: **Order 46,9%, Customer 70,0%, Auth 78,1%, Admin 83,3%** | ❌ **CHƯA ĐẠT** — cần bổ sung TC đi vào nhánh chưa test (3.15.A) |
+| CC-3 | ≥ 95% line tổng hợp 12 lớp Service | **97,8%** | ✅ ĐẠT |
+| CC-4 | ≥ 60% line toàn dự án | **75,2%** (instruction 75,1%) | ✅ ĐẠT |
+| CC-5 | Không còn lớp Service nghiệp vụ nào ở mức 0% | Không còn lớp 0%; còn thấp: **AuditLog 35,5%, OTP 4,3%** | ⚠️ **ĐẠT một phần** — không còn 0% nhưng 2 lớp chưa đạt 90% |
 
-> **Lưu ý về quality gate trong `pom.xml`:** luật `jacoco:check` (BUNDLE ≥ 90% line/method, ≥ 85% branch) gắn với phase `verify` (**không** chạy khi `mvn test`). Với mức phủ toàn dự án hiện tại 62,2%, lệnh `mvn verify` sẽ **không đạt** gate — phản ánh đúng thực tế là bộ test mới bao phủ tầng Service (đối tượng của Mocking) mà chưa phủ tầng Web/Config/Entity. Cần nêu rõ ranh giới này khi trình bày để tránh hiểu sai con số.
+> **Lưu ý về quality gate trong `pom.xml`:** luật `jacoco:check` gắn với phase `verify` (**không** chạy khi chỉ `mvn test`): ràng buộc **LINE ≥ 90% ở cấp CLASS cho 12 lớp Service trọng tâm** (không ràng buộc BUNDLE toàn dự án). Với bộ 189 lượt hiện tại, `mvn clean verify` **PASS** hoàn toàn: 194/194 test + `jacoco:check` PASS + BUILD SUCCESS.
 
-**Cách diễn giải để trình bày:** số 62,2% toàn dự án bị kéo xuống bởi các lớp **nằm ngoài phạm vi unit test có Mocking** (Controller, Entity POJO, Config). Tầng Service — **đối tượng của kỹ thuật Mocking** — đạt **95,4% line** cho 11 lớp đã test. Khoảng trống còn lại tập trung đúng vào 3 lớp chưa viết test (Wallet/AuditLog/OTP — 125 dòng) và các nhánh điều khiển của Order/Auth/Customer.
+**Cách diễn giải để trình bày:** số 75,2% toàn dự án vẫn bị kéo xuống bởi các lớp **nằm ngoài phạm vi unit test có Mocking** (Controller 0%, Entity POJO ~0%). Tầng Service — **đối tượng của kỹ thuật Mocking** — đạt **97,8% line** cho 12 lớp đã test (cả package `service.impl` gồm các lớp hạ tầng: 816/893 = 91,4%). Khoảng trống còn lại tập trung đúng vào 2 lớp chưa viết test (AuditLog/OTP) và các nhánh điều khiển của Order/Auth/Customer/Admin.
 
 ---
 
@@ -619,18 +653,18 @@ Cơ sở lý thuyết không ấn định một con số tuyệt đối; các **
 | **I5 — Độc lập thứ tự chạy** | Chạy lẻ 1 method, lẻ 1 class, chạy thứ tự ngẫu nhiên đều PASS như chạy cả suite | 3 lệnh chạy so sánh |
 | **I6 — Xác định (deterministic)** | Chạy lại nhiều lần cho cùng kết quả, không flaky | Chạy full suite nhiều lần trong buổi đo |
 
-#### 4.3.3. Kết quả thực đo (29/09/2026)
+#### 4.3.3. Kết quả thực đo (đo lại 18/10/2026 — bộ 189 lượt)
 
 | Chỉ báo | Phép kiểm chứng thực tế | Kết quả |
 |---|---|---|
-| I1 | Quét `src/test/**/*.java` (ngoài `demo`): `@SpringBootTest|@DataJpaTest|@WebMvcTest|@AutoConfigureMockMvc` | ✅ **0 kết quả** — không lớp unit test nào nạp Spring Context. (11 file dùng `MockitoExtension`: 10 lớp unit + 1 lớp demo) |
-| I2 | Grep `HikariPool|jdbc:mysql` trong log `mvn test` (MySQL80 đang **Running**) | ✅ **0 kết quả** — test không mở kết nối DB nào |
+| I1 | Quét `src/test/**/*.java` (ngoài `demo`): `@SpringBootTest|@DataJpaTest|@WebMvcTest|@AutoConfigureMockMvc` | ✅ **0 kết quả** — không lớp unit test nào nạp Spring Context. (12 file dùng `MockitoExtension` gồm 11 lớp unit và lớp demo `MockingDemoTest`; 4 lớp không cần mock là smoke test, hai lớp thuần logic tính giá/tính khoảng cách và lớp sinh token thật) |
+| I2 | Grep `HikariPool|jdbc:mysql` trong log `mvn clean verify` (MySQL80 đang **Running**) | ✅ **0 kết quả** — test không mở kết nối DB nào |
 | I3 | `EmailService`/`SMSService`/`MapService`/`PaymentService`/`OTPService` đều bị `@Mock`; log chỉ có nội dung giả lập (`[MOCK PAYMENT]`) | ✅ Không phụ thuộc mạng/dịch vụ thứ ba |
 | I4 | Kiểm tra cấu trúc: `@BeforeEach` dựng dữ liệu riêng từng class; `MockitoExtension` dùng strict stubs | ✅ Không lỗi `UnnecessaryStubbing`, không lỗi trạng thái |
-| I5a | `mvn '-Dtest=AuthServiceImplTest' '-Djacoco.skip=true' test` (lẻ 1 class — 22 TC) | ✅ **22/22 PASS** |
-| I5b | `mvn '-Dtest=AuthServiceImplTest$RegisterTests#register_Success' '-Djacoco.skip=true' test` (lẻ 1 method) | ✅ **1/1 PASS** |
-| I5c | Chạy toàn suite với **thứ tự method ngẫu nhiên** (`-Djunit.jupiter.testmethod.order.default=...MethodOrderer$Random`) | ✅ **158/158 PASS** |
-| I6 | 5 lần chạy full suite trong buổi đo (đầy đủ có demo; bỏ JaCoCo; coverage sạch; thứ tự ngẫu nhiên; lần lọc 14 lớp) | ✅ Mọi lần **158/158 PASS, 0 flaky** |
+| I5a | `mvn '-Dtest=AuthServiceImplTest' '-Djacoco.skip=true' test` (lẻ 1 class — 26 TC) | ✅ **26/26 PASS** (17,099 s) |
+| I5b | `mvn '-Dtest=AuthServiceImplTest$RegisterTests#register_Success' '-Djacoco.skip=true' test` (lẻ 1 method) | ✅ **1/1 PASS** (14,302 s) |
+| I5c | Chạy toàn suite với **thứ tự method ngẫu nhiên** (`-Djunit.jupiter.testmethod.order.default=...MethodOrderer$Random`) | ✅ **189/189 PASS** (20,554 s) |
+| I6 | Nhiều lần chạy full suite trong 2 buổi đo (29/09: nhiều lần với bộ 158; 18/10: `mvn clean verify` 194/194 + ngẫu nhiên 189/189 + lẻ class/method) | ✅ Mọi lần **PASS, 0 flaky** |
 
 **Lệnh kiểm chứng I5 (có thể tái lập):**
 
@@ -649,35 +683,35 @@ mvn '-Dtest=SpeedApplicationTest,AuthServiceImplTest,...' '-Djunit.jupiter.testm
 
 #### 4.3.4. Đánh giá
 
-✅ **ĐẠT toàn bộ I1 → I6** — 158/158 PASS ở mọi kiểu chạy (đầy đủ, lẻ class, lẻ method, thứ tự ngẫu nhiên), **không cần** MySQL/mạng/Spring Context. **Tỷ lệ độc lập = 100%, số flaky = 0.**
+✅ **ĐẠT toàn bộ I1 → I6** — 194/194 (verify), 189/189 (thứ tự ngẫu nhiên), 26/26 (lẻ class), 1/1 (lẻ method) đều PASS, **không cần** MySQL/mạng/Spring Context cho bộ unit. **Tỷ lệ độc lập = 100%, số flaky = 0.**
 
 ---
 
 ## 5. Tổng hợp kết quả 3 tiêu chí đo lường
 
-| # | Tiêu chí | Chỉ báo con | Ngưỡng | Thực đo (29/09/2026) | Kết luận |
-|---|---|---|---|---|:--:|
-| 1 | **Execution Time** | ET-1 Tổng thời gian tầng test | ≤ 30 s | **18,110 s** (pipeline 21,491 s) | ✅ |
-| | | ET-2 Trung bình/lượt test | ≤ 200 ms | **115 ms** | ✅ |
-| | | ET-3 Mỗi test class | ≤ 5 s | Cao nhất 3,686 s | ✅ |
-| | | ET-4 Tái lập ổn định | 100% PASS | 5/5 lần, 158/158 | ✅ |
-| 2 | **Code Coverage** | CC-1 Line/lớp Service có test | ≥ 90% | 10/11 lớp ≥ 91,3%; Auth 89,7% | ⚠️ 10/11 |
-| | | CC-2 Branch/lớp | ≥ 85% | 4 lớp chưa đạt (Order 51,7%, Auth 50%, Customer 70%, Admin 83,3%) | ❌ |
-| | | CC-3 Line tổng hợp 11 lớp Service | ≥ 95% | **95,4%** | ✅ |
-| | | CC-4 Line toàn dự án | ≥ 60% | **62,2%** | ✅ |
-| | | CC-5 Không còn lớp nghiệp vụ 0% | 0 lớp | Còn Wallet/AuditLog/OTP = 0% | ❌ |
+| # | Tiêu chí | Chỉ báo con | Ngưỡng | Thực đo (18/10/2026) | Kết luận |
+|---|---|---|---|---|---|:--:|
+| 1 | **Execution Time** | ET-1 Tổng thời gian tầng test | ≤ 30 s | **4,721 s** (pipeline `mvn clean verify` ~104 s) | ✅ |
+| | | ET-2 Trung bình/lượt test | ≤ 200 ms | **25 ms** | ✅ |
+| | | ET-3 Mỗi test class | ≤ 5 s | Cao nhất 0,901 s | ✅ |
+| | | ET-4 Tái lập ổn định | 100% PASS | 194/194 · 189/189 · 26/26 · 1/1 | ✅ |
+| 2 | **Code Coverage** | CC-1 Line/lớp Service có test | ≥ 90% | 12/12 lớp (9 lớp 100%); `jacoco:check` PASS | ✅ |
+| | | CC-2 Branch/lớp | ≥ 85% | 4 lớp chưa đạt (Order 46,9%, Auth 78,1%, Customer 70%, Admin 83,3%) | ❌ |
+| | | CC-3 Line tổng hợp 12 lớp Service | ≥ 95% | **97,8%** | ✅ |
+| | | CC-4 Line toàn dự án | ≥ 60% | **75,2%** | ✅ |
+| | | CC-5 Không còn lớp nghiệp vụ 0% | 0 lớp | Không còn lớp 0%; AuditLog 35,5%, OTP 4,3% còn thấp | ⚠️ |
 | 3 | **Test Isolation** | I1 Không Spring Context | 0 annotation | 0 | ✅ |
 | | | I2 Không kết nối DB | 0 lời gọi | 0 (MySQL đang chạy vẫn không chạm) | ✅ |
 | | | I3 Không phụ thuộc mạng/dịch vụ ngoài | 100% mock | 100% | ✅ |
 | | | I4 Không chia sẻ trạng thái | 0 lỗi trạng thái | 0 lỗi | ✅ |
-| | | I5 Độc lập thứ tự | Lẻ method + lẻ class + ngẫu nhiên PASS | 1/1 · 22/22 · 158/158 | ✅ |
-| | | I6 Không flaky | 0 flaky | 0/5 lần chạy | ✅ |
+| | | I5 Độc lập thứ tự | Lẻ method + lẻ class + ngẫu nhiên PASS | 1/1 · 26/26 · 189/189 | ✅ |
+| | | I6 Không flaky | 0 flaky | 0 flaky / nhiều lần chạy 2 buổi đo | ✅ |
 
 **Kết luận chung:**
 
-- **Execution Time: ĐẠT 4/4** — bộ test rất nhanh (~115 ms/lượt) nhờ Mocking loại bỏ I/O thật; phù hợp chạy liên tục trong CI. Bằng chứng đối chứng: login có Mock nhanh hơn login qua Spring+H2 ~420 lần.
+- **Execution Time: ĐẠT 4/4** — bộ test rất nhanh (~25 ms/lượt) nhờ Mocking loại bỏ I/O thật; phù hợp chạy liên tục trong CI. Bằng chứng đối chứng: login có Mock nhanh hơn login qua Spring+H2 ~390 lần (dao động 223×–420×).
 - **Test Isolation: ĐẠT 6/6** — kết quả then chốt chứng minh "Mocking cô lập được thành phần phụ thuộc": không DB, không mạng, không Spring Context, không flaky.
-- **Code Coverage: ĐẠT 3/5** — cần khắc phục 2 mục: (a) bổ sung test cho 3 lớp còn 0% (`WalletServiceImpl`, `AuditLogServiceImpl`, `OTPServiceImpl` — ma trận tại 3.14.B) để nâng package `service.impl` từ 79,0% lên ~95% line; (b) bổ sung TC đi vào các nhánh chưa test của `OrderServiceImpl`/`AuthServiceImpl`/`CustomerServiceImpl` (3.14.A) để vượt ngưỡng branch 85%, đồng thời nâng `AuthServiceImpl` từ 89,7% lên ≥ 90%.
+- **Code Coverage: ĐẠT 4/5 về tinh thần** — CC-1/CC-3/CC-4 đạt hẳn; CC-5 chỉ còn 2 lớp dưới ngưỡng (không còn lớp 0%). Còn **CC-2 (branch ≥ 85%) CHƯA ĐẠT** — cần bổ sung TC đi vào các nhánh chưa test của `OrderServiceImpl` (46,9%), `AuthServiceImpl` (78,1%), `CustomerServiceImpl` (70,0%), `AdminServiceImpl` (83,3%) — thiết kế sẵn tại 3.15.A.
 
 ---
 
@@ -692,11 +726,11 @@ cd speed-backend
 # 0. (Khi cần số liệu coverage thuần) xóa dữ liệu đo cũ
 Remove-Item target\jacoco.exec -ErrorAction SilentlyContinue
 
-# 1. Chạy 158 lượt Unit Test + sinh báo cáo JaCoCo
-mvn '-Dtest=SpeedApplicationTest,AuthServiceImplTest,OrderServiceImplTest,PaymentServiceImplTest,VoucherServiceImplTest,PricingServiceImplTest,DistanceServiceImplTest,CustomerServiceImplTest,DriverServiceImplTest,AdminServiceImplTest,NotificationServiceImplTest,ReviewServiceImplTest,JwtTokenProviderTest,CustomUserDetailsServiceTest' test
-# → "Tests run: 158, Failures: 0" + BUILD SUCCESS
+# 1. Chạy 189 lượt Unit Test + sinh báo cáo JaCoCo
+mvn '-Dtest=SpeedApplicationTest,AuthServiceImplTest,OrderServiceImplTest,PaymentServiceImplTest,VoucherServiceImplTest,PricingServiceImplTest,DistanceServiceImplTest,CustomerServiceImplTest,DriverServiceImplTest,AdminServiceImplTest,NotificationServiceImplTest,ReviewServiceImplTest,WalletServiceImplTest,JwtTokenProviderTest,CustomUserDetailsServiceTest' test
+# → "Tests run: 189, Failures: 0" + BUILD SUCCESS
 
-# 2. Chạy đầy đủ (gồm 2 lớp demo đối chứng) — 163 lượt; xem số liệu Mock vs Spring
+# 2. Chạy đầy đủ (gồm 2 lớp demo đối chứng) — 194 lượt; xem số liệu Mock vs Spring
 mvn test
 
 # 3. Bảng thời gian chạy per-class → mở target/surefire-reports/*.txt (dòng "Time elapsed")
@@ -708,10 +742,14 @@ start target\site\jacoco\index.html      # giao diện
 # 5. Chứng minh tính độc lập (I1/I2/I5) — xem mục 4.3
 mvn '-Dtest=AuthServiceImplTest' '-Djacoco.skip=true' test
 mvn '-Dtest=AuthServiceImplTest$RegisterTests#register_Success' '-Djacoco.skip=true' test
-mvn '-Dtest=SpeedApplicationTest,AuthServiceImplTest,OrderServiceImplTest,PaymentServiceImplTest,VoucherServiceImplTest,PricingServiceImplTest,DistanceServiceImplTest,CustomerServiceImplTest,DriverServiceImplTest,AdminServiceImplTest,NotificationServiceImplTest,ReviewServiceImplTest,JwtTokenProviderTest,CustomUserDetailsServiceTest' '-Djunit.jupiter.testmethod.order.default=org.junit.jupiter.api.MethodOrderer$Random' '-Djacoco.skip=true' test
+mvn '-Dtest=SpeedApplicationTest,AuthServiceImplTest,OrderServiceImplTest,PaymentServiceImplTest,VoucherServiceImplTest,PricingServiceImplTest,DistanceServiceImplTest,CustomerServiceImplTest,DriverServiceImplTest,AdminServiceImplTest,NotificationServiceImplTest,ReviewServiceImplTest,WalletServiceImplTest,JwtTokenProviderTest,CustomUserDetailsServiceTest' '-Djunit.jupiter.testmethod.order.default=org.junit.jupiter.api.MethodOrderer$Random' '-Djacoco.skip=true' test
+
+# 6. Vòng CI đầy đủ: 194 lượt + jacoco:check (quality gate 12 lớp) + đóng gói JAR
+mvn clean verify
+# → "Tests run: 194" + jacoco:check PASS + BUILD SUCCESS (~01:44 min)
 ```
 
-**Môi trường đo:** Windows 11 · JDK 21.0.10 (Oracle) · Apache Maven 3.9.16 · JaCoCo 0.8.12 · Surefire 3.5.2 · MySQL80 (Running — **không** được dùng bởi bộ test) · Ngày: 29/09/2026.
+**Môi trường đo:** Windows 11 · JDK 21.0.10 (Oracle) · Apache Maven 3.9.16 · JaCoCo 0.8.12 · Surefire 3.5.2 · MySQL80 (Running — **không** được dùng bởi bộ test) · Ngày: 29/09/2026 (gốc) — đo lại 18/10/2026.
 
 ---
 

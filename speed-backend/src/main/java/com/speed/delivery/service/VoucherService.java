@@ -11,4 +11,6 @@ public interface VoucherService {
     List<Voucher> getActiveVouchers();
     Voucher createVoucher(Voucher voucher);
     Voucher getVoucherById(Long id);
+    List<Voucher> getAllVouchers();
+    Voucher toggleActive(Long id);
 }

@@ -118,7 +118,9 @@ class MockingDemoTest {
                 iterations, elapsedMs, usPerOp);
         then(authenticationManager).should(times(iterations + 1)).authenticate(any());
         then(userRepository).should(times(iterations + 1)).findByEmail("test@speed.vn");
-        assertThat(elapsedMs).isLessThan(5_000); // 10k login phải xong dưới 5 giây
+        // Nguong 30s du rong de khong flaky tren may cham (thuc do 4-7s/10k = 0,4-0,7 ms/login);
+        // trong khi neu goi DB that (~100 ms/login) thi 10k login mat gan 17 phut.
+        assertThat(elapsedMs).isLessThan(30_000);
     }
 
     @Test

@@ -31,8 +31,8 @@ Hệ thống Speed Delivery là ứng dụng giao hàng nhanh được xây dự
 | API Endpoint | 44 |
 | Entity (JPA) | 16 |
 | Repository | 16 |
-| Unit Test File | 13 |
-| Unit Test Case | 158 |
+| Unit Test File | 15 |
+| Unit Test Case | 194 |
 | Tỷ lệ test PASSED | 100% |
 
 ### 1.2. Công nghệ sử dụng

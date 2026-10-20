@@ -1,53 +1,75 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { voucherService } from '@/services/voucherService';
+import type { VoucherResponse } from '@/types';
 
-interface Voucher {
-  id: number;
-  code: string;
-  desc: string;
-  type: 'FIXED_AMOUNT' | 'PERCENTAGE';
-  value: number;
-  maxDisc: number;
-  minOrder: number;
-  usageLimit: number;
-  used: number;
-  start: string;
-  end: string;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-
-const VOUCHERS_INIT: Voucher[] = [
-  { id: 1, code: 'SPEED20K', desc: 'Giảm 20K đơn từ 50K', type: 'FIXED_AMOUNT', value: 20000, maxDisc: 20000, minOrder: 50000, usageLimit: 100, used: 45, start: '01/09/2026', end: '30/09/2026', status: 'ACTIVE' },
-  { id: 2, code: 'FIRST15', desc: 'Giảm 15% đơn đầu tiên', type: 'PERCENTAGE', value: 15, maxDisc: 30000, minOrder: 30000, usageLimit: 200, used: 88, start: '01/09/2026', end: '31/12/2026', status: 'ACTIVE' },
-  { id: 3, code: 'VIP50K', desc: 'Giảm 50K cho VIP', type: 'FIXED_AMOUNT', value: 50000, maxDisc: 50000, minOrder: 150000, usageLimit: 50, used: 12, start: '01/09/2026', end: '15/10/2026', status: 'ACTIVE' },
-  { id: 4, code: 'SUMMER25', desc: 'Hè 2026: Giảm 25%', type: 'PERCENTAGE', value: 25, maxDisc: 40000, minOrder: 0, usageLimit: 500, used: 500, start: '01/06/2026', end: '31/08/2026', status: 'INACTIVE' },
-];
-
-const EMPTY = { code: '', desc: '', type: 'FIXED_AMOUNT' as const, value: '', maxDisc: '', minOrder: '', usageLimit: '', start: '', end: '' };
+const EMPTY = { code: '', desc: '', type: 'FIXED_AMOUNT' as string, value: '', maxDisc: '', minOrder: '', usageLimit: '', start: '', end: '' };
 
 export default function AdminVouchersPage() {
-  const [vouchers, setVouchers] = useState<Voucher[]>(VOUCHERS_INIT);
+  const [vouchers, setVouchers] = useState<VoucherResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState(EMPTY);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const save = () => {
-    setVouchers((vs) => [
-      ...vs,
-      {
-        id: Date.now(),
-        ...form,
-        value: Number(form.value) || 0,
-        maxDisc: Number(form.maxDisc) || 0,
-        minOrder: Number(form.minOrder) || 0,
-        usageLimit: Number(form.usageLimit) || 0,
-        used: 0,
-        status: 'ACTIVE' as const,
-      },
-    ]);
-    setModal(false);
-    setForm(EMPTY);
+  const load = useCallback(() => {
+    setLoading(true);
+    voucherService
+      .getAllVouchers()
+      .then((res) => setVouchers(res.data.data ?? []))
+      .catch(() => setError('Không thể tải danh sách voucher'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleToggle = async (id: number) => {
+    setTogglingId(id);
+    setError('');
+    try {
+      const res = await voucherService.toggleVoucher(id);
+      setVouchers((vs) => vs.map((v) => (v.id === id ? res.data.data : v)));
+    } catch (e: any) {
+      setError(e.response?.data?.message || 'Không thể cập nhật voucher');
+    } finally {
+      setTogglingId(null);
+    }
   };
+
+  const save = async () => {
+    setFormError('');
+    if (!form.code.trim() || !form.value || !form.start || !form.end) {
+      setFormError('Vui lòng nhập đầy đủ mã, giá trị giảm và thời gian hiệu lực');
+      return;
+    }
+    setSaving(true);
+    try {
+      await voucherService.createVoucher({
+        code: form.code.trim().toUpperCase(),
+        description: form.desc || undefined,
+        discountType: form.type,
+        discountValue: Number(form.value),
+        maxDiscount: form.maxDisc ? Number(form.maxDisc) : undefined,
+        minOrderValue: form.minOrder ? Number(form.minOrder) : undefined,
+        usageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
+        startDate: `${form.start}T00:00:00`,
+        endDate: `${form.end}T23:59:59`,
+      });
+      setModal(false);
+      setForm(EMPTY);
+      load();
+    } catch (e: any) {
+      setFormError(e.response?.data?.message || 'Tạo voucher thất bại');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString('vi-VN');
 
   return (
     <div className="p-6 max-w-5xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -64,9 +86,21 @@ export default function AdminVouchersPage() {
         </button>
       </div>
 
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">⚠️ {error}</div>
+      )}
+
       <div className="grid grid-cols-1 gap-4">
-        {vouchers.map((v) => {
-          const pct = v.usageLimit > 0 ? Math.round((v.used / v.usageLimit) * 100) : 0;
+        {loading && (
+          <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+            <div className="w-8 h-8 border-2 border-red-200 border-t-red-500 rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-gray-400 font-medium">Đang tải voucher...</p>
+          </div>
+        )}
+
+        {!loading && vouchers.map((v) => {
+          const pct = v.usageLimit > 0 ? Math.round((v.usedCount / v.usageLimit) * 100) : 0;
+          const isPercentage = v.discountType === 'PERCENTAGE';
           return (
             <div key={v.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-start justify-between mb-3">
@@ -76,32 +110,32 @@ export default function AdminVouchersPage() {
                     <div className="flex items-center gap-2">
                       <span className="font-black text-gray-900 font-mono text-base">{v.code}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                        v.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                        v.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                       }`}>
-                        {v.status === 'ACTIVE' ? '● Hoạt động' : '○ Ngừng'}
+                        {v.isActive ? '● Hoạt động' : '○ Ngừng'}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-0.5">{v.desc}</p>
+                    <p className="text-sm text-gray-600 mt-0.5">{v.description ?? '—'}</p>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-2xl font-black text-red-600" style={{ fontFamily: 'Nunito' }}>
-                    {v.type === 'PERCENTAGE' ? `-${v.value}%` : `-${(v.value / 1000).toFixed(0)}K₫`}
+                    {isPercentage ? `-${v.discountValue}%` : `-${(v.discountValue / 1000).toFixed(0)}K₫`}
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3 text-xs">
-                <div><span className="text-gray-400">Loại: </span><b className="text-gray-700">{v.type === 'PERCENTAGE' ? 'Phần trăm' : 'Số tiền'}</b></div>
-                <div><span className="text-gray-400">Đơn tối thiểu: </span><b className="text-gray-700">{(v.minOrder / 1000).toFixed(0)}K₫</b></div>
-                <div><span className="text-gray-400">HSD: </span><b className="text-gray-700">{v.start} → {v.end}</b></div>
-                <div><span className="text-gray-400">Giảm tối đa: </span><b className="text-gray-700">{(v.maxDisc / 1000).toFixed(0)}K₫</b></div>
+                <div><span className="text-gray-400">Loại: </span><b className="text-gray-700">{isPercentage ? 'Phần trăm' : 'Số tiền'}</b></div>
+                <div><span className="text-gray-400">Đơn tối thiểu: </span><b className="text-gray-700">{((v.minOrderValue ?? 0) / 1000).toFixed(0)}K₫</b></div>
+                <div><span className="text-gray-400">HSD: </span><b className="text-gray-700">{formatDate(v.startDate)} → {formatDate(v.endDate)}</b></div>
+                <div><span className="text-gray-400">Giảm tối đa: </span><b className="text-gray-700">{v.maxDiscount ? `${(v.maxDiscount / 1000).toFixed(0)}K₫` : '—'}</b></div>
               </div>
 
               {/* Usage progress */}
               <div className="mb-3">
                 <div className="flex justify-between text-xs text-gray-400 mb-1">
-                  <span>Đã dùng: {v.used}/{v.usageLimit}</span>
+                  <span>Đã dùng: {v.usedCount}/{v.usageLimit}</span>
                   <span className={pct >= 100 ? 'text-red-500 font-semibold' : ''}>{pct}%</span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -116,21 +150,23 @@ export default function AdminVouchersPage() {
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => setVouchers((vs) => vs.map((x) => (x.id === v.id ? { ...x, status: x.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : x)))}
-                  className="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                  onClick={() => handleToggle(v.id)}
+                  disabled={togglingId === v.id}
+                  className="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
                 >
-                  {v.status === 'ACTIVE' ? '🔕 Tắt' : '🔔 Bật'}
-                </button>
-                <button
-                  onClick={() => setVouchers((vs) => vs.filter((x) => x.id !== v.id))}
-                  className="px-3 py-1.5 text-xs font-semibold bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                >
-                  🗑️ Xóa
+                  {togglingId === v.id ? '...' : v.isActive ? '🔕 Tắt' : '🔔 Bật'}
                 </button>
               </div>
             </div>
           );
         })}
+
+        {!loading && vouchers.length === 0 && (
+          <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+            <div className="text-5xl mb-3">🎟️</div>
+            <p className="text-gray-400 font-medium">Chưa có voucher nào</p>
+          </div>
+        )}
       </div>
 
       {/* Create modal */}
@@ -138,6 +174,9 @@ export default function AdminVouchersPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="font-black text-gray-900 text-xl mb-5" style={{ fontFamily: 'Nunito' }}>Tạo voucher mới</h3>
+            {formError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">⚠️ {formError}</div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               {([
                 ['Mã voucher', 'code', 'text'],
@@ -172,11 +211,11 @@ export default function AdminVouchersPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-5">
-              <button onClick={() => setModal(false)} className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-50">
+              <button onClick={() => { setModal(false); setFormError(''); }} className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-50">
                 Hủy
               </button>
-              <button onClick={save} className="flex-1 py-2.5 bg-red-gradient text-white rounded-xl text-sm font-semibold shadow-lg shadow-red-200 hover:opacity-90">
-                💾 Lưu voucher
+              <button onClick={save} disabled={saving} className="flex-1 py-2.5 bg-red-gradient text-white rounded-xl text-sm font-semibold shadow-lg shadow-red-200 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                {saving ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Đang lưu...</> : '💾 Lưu voucher'}
               </button>
             </div>
           </div>

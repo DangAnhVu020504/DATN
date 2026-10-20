@@ -6,16 +6,21 @@
 
 ### 3.1.1. Kiến trúc hệ thống và các thành phần phụ thuộc
 
-Hệ thống Speed Delivery gồm **6 module nghiệp vụ chính** cần kiểm thử, mỗi module là một lớp Service Implementation phụ thuộc vào nhiều thành phần bên ngoài (Repository truy xuất CSDL, Service khác, thư viện bảo mật...):
+Hệ thống Speed Delivery có tất cả **15 lớp kiểm thử** (12 lớp Service Implementation + 2 lớp bảo mật + 1 smoke test), tổng **189 lượt unit test**. Trong đó, các module Service Implementation phụ thuộc vào nhiều thành phần bên ngoài (Repository truy xuất CSDL, Service khác, thư viện bảo mật...):
 
 | Module (Class Under Test) | Số Dependencies | Các phụ thuộc cần Mock |
 |---|:---:|---|
 | `AuthServiceImpl` | 11 | UserRepository, RoleRepository, CustomerRepository, DriverRepository, RefreshTokenRepository, PasswordEncoder, AuthenticationManager, JwtTokenProvider, OTPService, EmailService, AuditLogService |
 | `OrderServiceImpl` | 10 | OrderRepository, CustomerRepository, DriverRepository, OrderHistoryRepository, PaymentService, PricingService, NotificationService, VoucherService, DistanceService, AuditLogService |
-| `PaymentServiceImpl` | 2 | PaymentRepository, OrderRepository |
-| `CustomerServiceImpl` | 4 | UserRepository, CustomerRepository, AddressRepository, AuditLogService |
 | `DriverServiceImpl` | 5 | DriverRepository, OrderRepository, OrderService, NotificationService, AuditLogService |
 | `AdminServiceImpl` | 5 | UserRepository, CustomerRepository, DriverRepository, OrderRepository, AuditLogService |
+| `ReviewServiceImpl` | 5 | ReviewRepository, OrderRepository, CustomerRepository, DriverRepository, NotificationService |
+| `CustomerServiceImpl` | 4 | UserRepository, CustomerRepository, AddressRepository, AuditLogService |
+| `WalletServiceImpl` | 3 | WalletRepository, TransactionRepository, DriverRepository |
+| `PaymentServiceImpl` | 2 | PaymentRepository, OrderRepository |
+| `VoucherServiceImpl` | 1 | VoucherRepository |
+| `NotificationServiceImpl` | 1 | NotificationRepository |
+| `CustomUserDetailsService` (security) | 1 | UserRepository |
 
 Ngoài ra, hệ thống còn có các module **không có phụ thuộc bên ngoài** (pure logic) được test trực tiếp không cần Mock:
 
@@ -24,6 +29,7 @@ Ngoài ra, hệ thống còn có các module **không có phụ thuộc bên ngo
 | `PricingServiceImpl` | Tính giá giao hàng (giá cơ bản + khoảng cách + phụ thu trọng lượng) |
 | `DistanceServiceImpl` | Tính khoảng cách Haversine giữa 2 tọa độ GPS |
 | `JwtTokenProvider` | Tạo, xác thực và trích xuất thông tin từ JWT token |
+| `SpeedApplicationTest` | Smoke test: Spring Context load thành công |
 
 ### 3.1.2. Mã nguồn các thành phần tiêu biểu
 
@@ -162,26 +168,44 @@ Môi trường phần mềm và thư viện được sử dụng để xây dự
 | **Framework Mocking** | Mockito 5.x (BDDMockito) | Giả lập dependencies |
 | **Thư viện Assertion** | AssertJ 3.x | Kiểm tra kết quả (fluent API) |
 | **Code Coverage** | JaCoCo 0.8.12 | Đo độ bao phủ mã nguồn |
-| **Build Tool** | Apache Maven 3.x | Quản lý thư viện và build |
+| **Build Tool** | Apache Maven 3.9.16 | Quản lý thư viện và build |
 | **IDE** | IntelliJ IDEA | Môi trường phát triển |
 
-**Cấu hình JaCoCo trong `pom.xml`** – Yêu cầu bao phủ tối thiểu:
+**Cấu hình JaCoCo trong `pom.xml`** – Quality gate bắt buộc 12 lớp Service trọng tâm đạt tối thiểu **90% line coverage** (kiểm tra tự động ở phase `verify`):
 ```xml
-<rules>
-    <rule>
-        <element>BUNDLE</element>
-        <limits>
-            <limit><counter>LINE</counter><value>COVEREDRATIO</value><minimum>0.90</minimum></limit>
-            <limit><counter>METHOD</counter><value>COVEREDRATIO</value><minimum>0.90</minimum></limit>
-            <limit><counter>BRANCH</counter><value>COVEREDRATIO</value><minimum>0.85</minimum></limit>
-        </limits>
-    </rule>
-</rules>
+<execution>
+    <id>check</id>
+    <goals><goal>check</goal></goals>
+    <configuration>
+        <rules>
+            <rule>
+                <element>CLASS</element>
+                <includes>
+                    <include>*AuthServiceImpl</include>
+                    <include>*OrderServiceImpl</include>
+                    <include>*PaymentServiceImpl</include>
+                    <include>*PricingServiceImpl</include>
+                    <include>*VoucherServiceImpl</include>
+                    <include>*WalletServiceImpl</include>
+                    <include>*DriverServiceImpl</include>
+                    <include>*CustomerServiceImpl</include>
+                    <include>*AdminServiceImpl</include>
+                    <include>*NotificationServiceImpl</include>
+                    <include>*ReviewServiceImpl</include>
+                    <include>*DistanceServiceImpl</include>
+                </includes>
+                <limits>
+                    <limit><counter>LINE</counter><value>COVEREDRATIO</value><minimum>0.90</minimum></limit>
+                </limits>
+            </rule>
+        </rules>
+    </configuration>
+</execution>
 ```
 
 ## 3.3. Thiết kế các kịch bản Unit Test
 
-Dựa trên logic nghiệp vụ của từng module, các kịch bản kiểm thử (Test Cases) được thiết kế bao phủ cả **luồng thành công (Happy Path)** và **luồng ngoại lệ/lỗi (Edge Cases/Exceptions)**. Tổng cộng **56 kịch bản mới** được thiết kế cho 6 module chưa có test.
+Dựa trên logic nghiệp vụ của từng module, các kịch bản kiểm thử (Test Cases) được thiết kế bao phủ cả **luồng thành công (Happy Path)** và **luồng ngoại lệ/lỗi (Edge Cases/Exceptions)**. Tổng cộng **62 kịch bản mới** được thiết kế cho 6 module chưa có test (DriverServiceImpl được bổ sung thêm 6 kịch bản vòng sau).
 
 ### 3.3.1. Module PaymentServiceImpl (10 Test Cases)
 
@@ -215,7 +239,7 @@ Dựa trên logic nghiệp vụ của từng module, các kịch bản kiểm th
 | CS-TC11 | Xóa địa chỉ không thuộc customer | customerId=1, addressId khác | Address(customerId=2) | BadRequestException, delete() KHÔNG gọi |
 | CS-TC12 | Đặt địa chỉ mặc định | customerId=1, addressId=2 | Địa chỉ tồn tại | Reset cũ + set mới |
 
-### 3.3.3. Module DriverServiceImpl (12 Test Cases)
+### 3.3.3. Module DriverServiceImpl (18 Test Cases)
 
 | Mã TC | Tên kịch bản | Đầu vào | Trạng thái Mock Data | Kết quả mong đợi |
 |---|---|---|---|---|
@@ -231,6 +255,12 @@ Dựa trên logic nghiệp vụ của từng module, các kịch bản kiểm th
 | DR-TC10 | Lịch sử giao hàng | driverId=1, pageable | `findById` → Driver | Page\<OrderResponse\> |
 | DR-TC11 | Lấy thu nhập | driverId=1 | earnings=800000 | return 800000 |
 | DR-TC12 | Thu nhập – driver không tồn tại | driverId=999 | `findById` → empty | ResourceNotFoundException |
+| DR-TC13 | Lấy hồ sơ tài xế thành công | driverId=1 | `findById` → Driver | DriverResponse map đủ trường |
+| DR-TC14 | Hồ sơ – driver không tồn tại | driverId=999 | `findById` → empty | ResourceNotFoundException |
+| DR-TC15 | Nhận đơn – driver không tồn tại | driverId=999 | `findById` → empty | ResourceNotFoundException |
+| DR-TC16 | Hoàn thành giao hàng – driver không tồn tại | driverId=999 | `findById` → empty | ResourceNotFoundException |
+| DR-TC17 | Lịch sử giao hàng – driver không tồn tại | driverId=999 | `findById` → empty | ResourceNotFoundException |
+| DR-TC18 | Từ chối đơn – đơn không tồn tại | orderId=999 | `orderRepository.findById` → empty | ResourceNotFoundException |
 
 ### 3.3.4. Module AdminServiceImpl (10 Test Cases)
 
@@ -486,35 +516,39 @@ class AdminServiceImplTest {
 Sau khi xây dựng và thực thi toàn bộ bộ kiểm thử đơn vị, kết quả thu được như sau:
 
 ```
-[INFO] Tests run: 158, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 194, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
-[INFO] Total time: 10.236 s
+[INFO] Total time:  01:44 min
 ```
+
+*(Số liệu 18/10/2026 — `mvn clean verify`: 194 lượt = 189 unit + 5 demo đối chứng; riêng bộ unit 189 lượt chạy hết ~4,7 s; `jacoco:check` PASS.)*
 
 ### 3.5.2. Bảng tổng hợp theo module
 
 | # | Module Test | Đối tượng kiểm thử | Số Dependencies Mock | Số Test Cases | Kết quả | Thời gian |
-|---|---|---|:---:|:---:|:---:|:---:|
-| 1 | AuthServiceImplTest | AuthServiceImpl | 11 | 22 | ✅ PASSED | ~0.5s |
-| 2 | OrderServiceImplTest | OrderServiceImpl | 10 | 17 | ✅ PASSED | ~0.4s |
-| 3 | PaymentServiceImplTest | PaymentServiceImpl | 2 | 10 | ✅ PASSED | ~0.1s |
-| 4 | CustomerServiceImplTest | CustomerServiceImpl | 4 | 12 | ✅ PASSED | ~0.1s |
-| 5 | DriverServiceImplTest | DriverServiceImpl | 5 | 12 | ✅ PASSED | ~0.1s |
-| 6 | AdminServiceImplTest | AdminServiceImpl | 5 | 10 | ✅ PASSED | ~0.3s |
-| 7 | NotificationServiceImplTest | NotificationServiceImpl | 1 | 7 | ✅ PASSED | ~0.1s |
-| 8 | CustomUserDetailsServiceTest | CustomUserDetailsService | 1 | 5 | ✅ PASSED | ~1.2s |
-| 9 | VoucherServiceImplTest | VoucherServiceImpl | 1 | 15 | ✅ PASSED | ~0.1s |
-| 10 | ReviewServiceImplTest | ReviewServiceImpl | 5 | 7 | ✅ PASSED | ~0.1s |
-| 11 | PricingServiceImplTest | PricingServiceImpl | 0 | 22 | ✅ PASSED | ~0.04s |
-| 12 | DistanceServiceImplTest | DistanceServiceImpl | 0 | 10 | ✅ PASSED | ~0.1s |
-| 13 | JwtTokenProviderTest | JwtTokenProvider | 0 | 11 | ✅ PASSED | ~0.5s |
-| | **TỔNG CỘNG** | **13 module** | | **158** | **158/158 PASSED** | **~10s** |
+|---|---|---|---|:---:|:---:|:---:|
+| 1 | AuthServiceImplTest | AuthServiceImpl | 11 | 26 | ✅ PASSED | ~0.36s |
+| 2 | OrderServiceImplTest | OrderServiceImpl | 10 | 17 | ✅ PASSED | ~0.90s |
+| 3 | DriverServiceImplTest | DriverServiceImpl | 5 | 18 | ✅ PASSED | ~0.42s |
+| 4 | AdminServiceImplTest | AdminServiceImpl | 5 | 10 | ✅ PASSED | ~0.33s |
+| 5 | ReviewServiceImplTest | ReviewServiceImpl | 5 | 7 | ✅ PASSED | ~0.27s |
+| 6 | CustomerServiceImplTest | CustomerServiceImpl | 4 | 12 | ✅ PASSED | ~0.29s |
+| 7 | WalletServiceImplTest | WalletServiceImpl | 3 | 16 | ✅ PASSED | ~0.52s |
+| 8 | PaymentServiceImplTest | PaymentServiceImpl | 2 | 10 | ✅ PASSED | ~0.25s |
+| 9 | VoucherServiceImplTest | VoucherServiceImpl | 1 | 18 | ✅ PASSED | ~0.36s |
+| 10 | NotificationServiceImplTest | NotificationServiceImpl | 1 | 7 | ✅ PASSED | ~0.25s |
+| 11 | CustomUserDetailsServiceTest | CustomUserDetailsService | 1 | 5 | ✅ PASSED | ~0.09s |
+| 12 | PricingServiceImplTest | PricingServiceImpl | 0 | 22 | ✅ PASSED | ~0.14s |
+| 13 | DistanceServiceImplTest | DistanceServiceImpl | 0 | 10 | ✅ PASSED | ~0.26s |
+| 14 | JwtTokenProviderTest | JwtTokenProvider | 0 | 10 | ✅ PASSED | ~0.27s |
+| 15 | SpeedApplicationTest | SpeedApplication (smoke) | 0 | 1 | ✅ PASSED | ~0.02s |
+| | **TỔNG CỘNG** | **15 lớp** | | **189** | **189/189 PASSED** | **~4,7s** |
 
 ### 3.5.3. Tổng hợp kỹ thuật Mocking đã áp dụng
 
 | Kỹ thuật Mockito | Mô tả | Module minh họa tiêu biểu |
 |---|---|---|
-| `@Mock` + `@InjectMocks` | Tạo đối tượng giả lập và tiêm tự động vào Class Under Test | Tất cả 10 module có mock |
+| `@Mock` + `@InjectMocks` | Tạo đối tượng giả lập và tiêm tự động vào Class Under Test | Tất cả module có mock |
 | `given(...).willReturn(...)` | Thiết lập hành vi trả về cho phương thức của Mock (BDDMockito) | Tất cả module |
 | `given(...).willThrow(...)` | Giả lập Mock ném ngoại lệ | AuthServiceImplTest |
 | `then(...).should(times(N))` | Xác minh phương thức Mock được gọi đúng N lần | PaymentServiceImplTest, AuthServiceImplTest |
@@ -531,24 +565,24 @@ Sau khi xây dựng và thực thi bộ kiểm thử đơn vị cho toàn bộ h
 
 ### 3.6.1. Khả năng cô lập phụ thuộc hoàn hảo
 
-Bộ Unit Test kiểm thử logic nghiệp vụ của **tất cả 13 module** độc lập hoàn toàn với:
+Bộ Unit Test kiểm thử logic nghiệp vụ của **tất cả 15 lớp** độc lập hoàn toàn với:
 - **Cơ sở dữ liệu MySQL** thật (tất cả Repository đều được Mock)
 - **Cổng thanh toán** (PaymentService Mock, không kết nối bên ngoài)
 - **Dịch vụ email/SMS** (EmailService, SMSService được Mock)
 - **Spring Security Context** (AuthenticationManager, JwtTokenProvider được Mock)
 
-Ngay cả khi **chưa cài đặt MySQL, chưa cấu hình SMTP server, hay chưa deploy lên server**, toàn bộ 158 test cases vẫn chạy thành công 100%.
+Ngay cả khi **chưa cài đặt MySQL, chưa cấu hình SMTP server, hay chưa deploy lên server**, toàn bộ **189 lượt** unit test vẫn chạy thành công 100%.
 
 ### 3.6.2. Tốc độ thực thi vượt trội
 
 | Phương pháp kiểm thử | Thời gian | So sánh |
 |---|:---:|:---:|
-| **Unit Test với Mocking** (Mockito) | **~10 giây** (bao gồm compile) | Nhanh nhất |
-| Integration Test với H2 Database | ~30-60 giây | Chậm hơn 3-6x |
-| Integration Test với `@SpringBootTest` | ~15-30 giây | Chậm hơn 2-3x |
-| Manual Testing (test thủ công) | ~30-60 phút | Chậm hơn 180-360x |
+| **Unit Test với Mocking** (Mockito, 189 lượt) | **~4,7 giây** (~25 ms/lượt) | Nhanh nhất |
+| Demo đối chứng `@SpringBootTest` (5 lượt) | Khởi động context **~39,7 giây** (đo 18/10/2026) | Chậm hơn ~8,4 lần |
+| 1 tác vụ login qua Spring + H2 thật | ~270 ms | Mock login chỉ ~0,7 ms (~390x nhanh hơn) |
+| Manual Testing (test thủ công) | ~30-60 phút | Chậm hơn hàng trăm lần |
 
-Thời gian thực thi thuần túy (không tính compile) chỉ khoảng **~3 giây** cho 158 test cases, trung bình **~19ms/test case**.
+Thời gian thực thi thuần túy (không tính compile) chỉ khoảng **~4,7 giây** cho 189 lượt unit test, trung bình **~25 ms/lượt**. Khi chạy đầy đủ `mvn clean verify` (194 lượt + quality gate + đóng gói): **01:44 phút**.
 
 ### 3.6.3. Chủ động mô phỏng các trường hợp biên (Edge Cases)
 
@@ -591,7 +625,8 @@ Bộ test không chỉ kiểm tra **dữ liệu đầu ra** mà còn đảm bả
 
 | Tiêu chí | Có Mocking (Mockito) | Không Mocking (Integration Test) |
 |---|---|---|
-| **Tốc độ** | ~19ms/test | ~200-500ms/test |
+| **Tốc độ** | ~25 ms/lượt test | ~270 ms cho 1 login qua Spring+H2 thật |
+| **Khởi động môi trường** | ~0 ms | Spring Context: ~39,7 s (đo 18/10) |
 | **Phụ thuộc ngoài** | Không cần DB, Email, SMS | Cần H2/MySQL, config đầy đủ |
 | **Độ cô lập** | 100% cô lập logic nghiệp vụ | Phụ thuộc nhiều thành phần |
 | **Edge Cases** | Dễ giả lập mọi trường hợp | Khó tạo dữ liệu biên |
@@ -603,7 +638,7 @@ Bộ test không chỉ kiểm tra **dữ liệu đầu ra** mà còn đảm bả
 
 Kết quả thực nghiệm cho thấy việc áp dụng kỹ thuật Mocking trong kiểm thử đơn vị mang lại **những ưu điểm rõ rệt** cho dự án Speed Delivery:
 
-1. **Tốc độ kiểm thử nhanh vượt trội**: 158 test cases thực thi trong ~10 giây, nhanh hơn 3-6 lần so với Integration Test.
+1. **Tốc độ kiểm thử nhanh vượt trội**: 189 lượt unit test thực thi trong ~4,7 giây (toàn vòng `mvn clean verify` 194 lượt: 01:44 phút) — nhanh hơn ~8,4 lần so với thời gian khởi động Spring Context (~39,7 giây, đo 18/10/2026).
 
 2. **Cô lập hoàn toàn phụ thuộc bên ngoài**: Không cần CSDL, email server, hay cổng thanh toán để chạy test. Phù hợp cho môi trường CI/CD.
 

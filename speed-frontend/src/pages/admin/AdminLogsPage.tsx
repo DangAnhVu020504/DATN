@@ -1,16 +1,6 @@
-import { useState } from 'react';
-
-const LOGS = [
-  { id: 1, user: 'Nguyễn Văn An', action: 'CREATE_ORDER', entity: 'Order SPD-047', entityId: '47', time: '09/09/2026 14:32' },
-  { id: 2, user: 'Trần Minh Khoa', action: 'TOGGLE_AVAILABILITY', entity: 'Driver', entityId: '2', time: '09/09/2026 13:00' },
-  { id: 3, user: 'Lê Thị Mai', action: 'LOGIN', entity: 'Auth', entityId: '—', time: '09/09/2026 12:30' },
-  { id: 4, user: 'Phạm Thị D', action: 'CANCEL_ORDER', entity: 'Order SPD-039', entityId: '39', time: '08/09/2026 16:45' },
-  { id: 5, user: 'Admin Hệ Thống', action: 'DELETE_USER', entity: 'User #12', entityId: '12', time: '08/09/2026 10:00' },
-  { id: 6, user: 'Hoàng Minh E', action: 'UPDATE_PROFILE', entity: 'User', entityId: '5', time: '07/09/2026 09:15' },
-  { id: 7, user: 'Nguyễn Văn An', action: 'SUBMIT_REVIEW', entity: 'Order SPD-043', entityId: '43', time: '06/09/2026 18:30' },
-];
-
-const ACTIONS = ['Tất cả', 'LOGIN', 'CREATE_ORDER', 'CANCEL_ORDER', 'UPDATE_PROFILE', 'TOGGLE_AVAILABILITY', 'DELETE_USER', 'SUBMIT_REVIEW'];
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { adminService } from '@/services/adminService';
+import type { LogResponse } from '@/types';
 
 const ACTION_CLS: Record<string, string> = {
   LOGIN: 'bg-blue-100 text-blue-700',
@@ -18,20 +8,46 @@ const ACTION_CLS: Record<string, string> = {
   CANCEL_ORDER: 'bg-red-100 text-red-700',
   UPDATE_PROFILE: 'bg-purple-100 text-purple-700',
   TOGGLE_AVAILABILITY: 'bg-amber-100 text-amber-700',
+  TOGGLE_USER_ACTIVE: 'bg-amber-100 text-amber-700',
   DELETE_USER: 'bg-red-200 text-red-800',
   SUBMIT_REVIEW: 'bg-yellow-100 text-yellow-700',
+  ASSIGN_DRIVER: 'bg-blue-100 text-blue-700',
+  COMPLETE_DELIVERY: 'bg-green-100 text-green-700',
 };
 
 export default function AdminLogsPage() {
   const [actionFilter, setActionFilter] = useState('Tất cả');
   const [userFilter, setUserFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [logs, setLogs] = useState<LogResponse[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filtered = LOGS.filter(
+  const load = useCallback(() => {
+    setLoading(true);
+    adminService
+      .getLogs(page - 1, 20)
+      .then((res) => {
+        setLogs(res.data.data?.content ?? []);
+        setTotalPages(res.data.data?.totalPages ?? 0);
+      })
+      .catch(() => setError('Không thể tải audit logs'))
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const actions = useMemo(() => ['Tất cả', ...Array.from(new Set(logs.map((l) => l.action)))], [logs]);
+
+  const filtered = logs.filter(
     (l) =>
       (actionFilter === 'Tất cả' || l.action === actionFilter) &&
-      l.user.toLowerCase().includes(userFilter.toLowerCase())
+      String(l.userId).includes(userFilter.trim())
   );
+
+  const formatDateTime = (iso: string) =>
+    new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return (
     <div className="p-6 max-w-5xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -40,6 +56,10 @@ export default function AdminLogsPage() {
         <p className="text-gray-500 text-sm mt-0.5">Lịch sử hoạt động toàn hệ thống</p>
       </div>
 
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">⚠️ {error}</div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-5">
         <div className="relative">
@@ -47,7 +67,7 @@ export default function AdminLogsPage() {
           <input
             value={userFilter}
             onChange={(e) => setUserFilter(e.target.value)}
-            placeholder="Lọc theo người dùng..."
+            placeholder="Lọc theo User ID..."
             className="pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white min-w-48 transition-all duration-200"
           />
         </div>
@@ -56,7 +76,7 @@ export default function AdminLogsPage() {
           onChange={(e) => setActionFilter(e.target.value)}
           className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white text-gray-700 min-w-44 transition-all duration-200"
         >
-          {ACTIONS.map((a) => (
+          {actions.map((a) => (
             <option key={a} value={a}>{a}</option>
           ))}
         </select>
@@ -75,14 +95,21 @@ export default function AdminLogsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filtered.map((l) => (
-              <tr key={l.id} className="hover:bg-gray-50 transition-colors">
+            {loading && (
+              <tr>
+                <td colSpan={5} className="px-4 py-10 text-center">
+                  <div className="w-6 h-6 border-2 border-red-200 border-t-red-500 rounded-full animate-spin mx-auto" />
+                </td>
+              </tr>
+            )}
+            {!loading && filtered.map((l) => (
+              <tr key={l.id} className="hover:bg-gray-50 transition-colors" title={l.details}>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 bg-red-gradient rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
-                      {l.user.charAt(0)}
+                      U
                     </div>
-                    <span className="text-sm font-medium text-gray-800">{l.user}</span>
+                    <span className="text-sm font-medium text-gray-800">User #{l.userId}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3">
@@ -90,14 +117,14 @@ export default function AdminLogsPage() {
                     {l.action}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600">{l.entity}</td>
-                <td className="px-4 py-3 text-xs font-mono text-gray-400">{l.entityId}</td>
-                <td className="px-4 py-3 text-xs text-gray-400">{l.time}</td>
+                <td className="px-4 py-3 text-sm text-gray-600">{l.entityType}</td>
+                <td className="px-4 py-3 text-xs font-mono text-gray-400">{l.entityId ?? '—'}</td>
+                <td className="px-4 py-3 text-xs text-gray-400">{formatDateTime(l.createdAt)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="py-12 text-center text-gray-400">
             <div className="text-4xl mb-2">🔍</div>
             <p>Không tìm thấy log nào.</p>
@@ -106,22 +133,24 @@ export default function AdminLogsPage() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-400">{filtered.length} log</p>
-        <div className="flex gap-1">
-          {[1, 2, 3, 4].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                page === p ? 'bg-red-gradient text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:border-red-300'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-4">
+          <p className="text-sm text-gray-400">Trang {page}/{totalPages}</p>
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  page === p ? 'bg-red-gradient text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:border-red-300'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -35,6 +35,19 @@ export const registerAsync = createAsyncThunk('auth/register', async (data: Regi
   }
 });
 
+// Logout: gọi API revoke refresh token phía server trước khi clear local
+export const logoutAsync = createAsyncThunk('auth/logout', async (_, { dispatch }) => {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (refreshToken) {
+    try {
+      await authService.logout(refreshToken);
+    } catch {
+      // Token có thể đã hết hạn — vẫn clear local
+    }
+  }
+  dispatch(logout());
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,

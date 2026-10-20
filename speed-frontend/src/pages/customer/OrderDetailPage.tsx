@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/redux/store';
 import { orderService } from '@/services/orderService';
 import { reviewService } from '@/services/reviewService';
-import type { OrderResponse } from '@/types';
+import type { OrderResponse, OrderHistoryResponse, ReviewResponse } from '@/types';
 
 const statusMap: Record<string, { label: string; cls: string }> = {
   PENDING:    { label: 'Chờ xử lý', cls: 'badge-pending' },
@@ -42,12 +42,26 @@ export default function OrderDetailPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [history, setHistory] = useState<OrderHistoryResponse[]>([]);
+  const [existingReview, setExistingReview] = useState<ReviewResponse | null>(null);
 
   const load = () => {
     if (!id) return;
     setLoading(true);
     orderService.getOrderById(Number(id))
-      .then((res) => { setOrder(res.data.data); setError(null); })
+      .then((res) => {
+        setOrder(res.data.data);
+        setError(null);
+        // Lấy lịch sử trạng thái thật + review đã có (nếu đơn đã giao)
+        orderService.getOrderHistory(Number(id))
+          .then((h) => setHistory(h.data.data ?? []))
+          .catch(() => setHistory([]));
+        if (res.data.data?.status === 'DELIVERED') {
+          reviewService.getOrderReview(Number(id))
+            .then((r) => setExistingReview(r.data.data))
+            .catch(() => setExistingReview(null));
+        }
+      })
       .catch((e) => setError(e.response?.data?.message || 'Không thể tải đơn hàng'))
       .finally(() => setLoading(false));
   };
@@ -96,7 +110,8 @@ export default function OrderDetailPage() {
     if (!customerId || !id) return;
     setSubmitting(true);
     try {
-      await reviewService.createReview(customerId, Number(id), rating, comment || undefined);
+      const res = await reviewService.createReview(customerId, Number(id), rating, comment || undefined);
+      setExistingReview(res.data.data);
       setReviewModal(false);
       setComment('');
     } catch (e: any) {
@@ -117,7 +132,35 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {order.status !== 'CANCELLED' && (
+      {/* Timeline từ lịch sử thật (nếu có); fallback hiển thị tĩnh theo trạng thái */}
+      {history.length > 0 ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
+          <h2 className="font-black text-gray-900 mb-5" style={{ fontFamily: 'Nunito' }}>Tiến trình đơn hàng</h2>
+          <div className="space-y-0">
+            {[...history].reverse().map((h, i) => {
+              const meta = statusMap[h.status];
+              const icon = TIMELINE.find((t) => t.status === h.status)?.icon
+                ?? (h.status === 'ASSIGNED' ? '🛵' : h.status === 'CANCELLED' ? '🚫' : '📍');
+              const isLast = i < history.length - 1;
+              return (
+                <div key={h.id} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm shrink-0 ${
+                      h.status === 'CANCELLED' ? 'bg-red-100 text-red-500' : 'bg-red-gradient text-white shadow-md shadow-red-100'
+                    }`}>{icon}</div>
+                    {isLast && <div className="w-0.5 flex-1 min-h-8 bg-red-200" />}
+                  </div>
+                  <div className="pb-5">
+                    <div className="text-sm font-semibold text-gray-900">{meta?.label || h.status}</div>
+                    {h.note && <div className="text-xs text-gray-500 mt-0.5">{h.note}</div>}
+                    <div className="text-xs text-gray-400 mt-0.5">{formatDateTime(h.createdAt) ?? ''}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : order.status !== 'CANCELLED' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
           <h2 className="font-black text-gray-900 mb-5" style={{ fontFamily: 'Nunito' }}>Tiến trình đơn hàng</h2>
           <div className="space-y-0">
@@ -220,13 +263,27 @@ export default function OrderDetailPage() {
             🚫 Hủy đơn hàng
           </button>
         )}
-        {order.status === 'DELIVERED' && (
+        {order.status === 'DELIVERED' && !existingReview && (
           <button onClick={() => setReviewModal(true)}
             className="flex-1 py-3 bg-red-gradient text-white rounded-xl text-sm font-bold shadow-lg shadow-red-200 hover:opacity-90 transition-all duration-200">
             ⭐ Đánh giá tài xế
           </button>
         )}
       </div>
+
+      {/* Existing review */}
+      {order.status === 'DELIVERED' && existingReview && (
+        <div className="mt-5 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold text-gray-900 text-sm">Đánh giá của bạn</h3>
+            <span className="text-amber-400 text-sm">{'⭐'.repeat(existingReview.rating)}{'☆'.repeat(5 - existingReview.rating)}</span>
+          </div>
+          {existingReview.comment && <p className="text-sm text-gray-600">"{existingReview.comment}"</p>}
+          <p className="text-xs text-gray-400 mt-1">
+            {existingReview.createdAt ? new Date(existingReview.createdAt).toLocaleString('vi-VN') : ''}
+          </p>
+        </div>
+      )}
 
       {/* Cancel modal */}
       {cancelModal && (

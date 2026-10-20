@@ -38,6 +38,22 @@ public class VoucherController {
         return ResponseEntity.ok(ApiResponse.success(vouchers));
     }
 
+    @GetMapping
+    @Operation(summary = "Danh sách tất cả voucher (Admin)")
+    public ResponseEntity<ApiResponse<List<VoucherResponse>>> getAllVouchers() {
+        List<VoucherResponse> vouchers = voucherService.getAllVouchers().stream()
+                .map(this::mapResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success(vouchers));
+    }
+
+    @PutMapping("/{id}/toggle")
+    @Operation(summary = "Bật/tắt voucher (Admin)")
+    public ResponseEntity<ApiResponse<VoucherResponse>> toggleActive(@PathVariable Long id) {
+        Voucher voucher = voucherService.toggleActive(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã cập nhật trạng thái voucher", mapResponse(voucher)));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Chi tiết voucher")
     public ResponseEntity<ApiResponse<VoucherResponse>> getVoucherById(@PathVariable Long id) {

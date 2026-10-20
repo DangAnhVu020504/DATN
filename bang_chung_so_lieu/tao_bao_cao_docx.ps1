@@ -145,53 +145,54 @@ foreach ($n in @('Title', 'T', 'TL', 'D', 'H', 'Add-Table', 'New-Text')) {
 Title 'Thiết kế ma trận kiểm thử và các tiêu chí đo lường cho bộ kiểm thử đơn vị dự án Speed Delivery'
 D 'Đề tài: nghiên cứu và ứng dụng kỹ thuật giả lập trong kiểm thử đơn vị phần mềm.'
 D 'Sinh viên thực hiện: Đặng Anh Vũ, mã số 4551190066.'
-D 'Thời điểm đo số liệu: ngày 30 tháng 9 năm 2026. Môi trường đo: Windows 11, JDK 21.0.10, Apache Maven 3.9.16, dịch vụ MySQL80 đang chạy nhưng bộ kiểm thử không kết nối tới.'
+D 'Thời điểm đo số liệu: ngày 18 tháng 10 năm 2026 (lần đo gốc ngày 30 tháng 9 năm 2026 được đo lại và mở rộng). Môi trường đo: Windows 11, JDK 21.0.10, Apache Maven 3.9.16, dịch vụ MySQL80 đang chạy nhưng bộ kiểm thử không kết nối tới.'
 D 'Bằng chứng số liệu: thư mục bang_chung_so_lieu chứa các nhật ký chạy kiểm thử và tệp độ bao phủ của lần đo.'
 
 H '1. Thông tin chung về bộ kiểm thử' 1
 H '1.1. Đối tượng kiểm thử và phạm vi báo cáo' 2
 T 'Báo cáo trình bày hai nội dung phục vụ phần thực nghiệm của khóa luận. Nội dung thứ nhất là thiết kế ma trận kiểm thử cho bộ kiểm thử đơn vị, chia theo ba loại đường dẫn gồm đường dẫn thuận lợi, trường hợp biên và đường dẫn ngoại lệ. Nội dung thứ hai là xác định và đo ba tiêu chí đánh giá hiệu quả của bộ kiểm thử gồm thời gian chạy, độ bao phủ mã nguồn và tính độc lập của kiểm thử.'
-T 'Đối tượng kiểm thử là tầng nghiệp vụ của hệ thống giao hàng nhanh Speed Delivery, cụ thể gồm 11 lớp nghiệp vụ trong gói com.speed.delivery.service.impl là xác thực, đơn hàng, thanh toán, mã giảm giá, tính giá, khoảng cách, khách hàng, tài xế, quản trị, thông báo và đánh giá; thêm 2 lớp thuộc gói bảo mật là JwtTokenProvider và CustomUserDetailsService cùng 1 lớp kiểm thử khởi động ứng dụng là SpeedApplicationTest.'
+T 'Đối tượng kiểm thử là tầng nghiệp vụ của hệ thống giao hàng nhanh Speed Delivery, cụ thể gồm 12 lớp nghiệp vụ trong gói com.speed.delivery.service.impl là xác thực, đơn hàng, thanh toán, mã giảm giá, tính giá, khoảng cách, khách hàng, tài xế, quản trị, thông báo, đánh giá và ví tài xế; thêm 2 lớp thuộc gói bảo mật là JwtTokenProvider và CustomUserDetailsService cùng 1 lớp kiểm thử khởi động ứng dụng là SpeedApplicationTest.'
 T 'Công nghệ sử dụng được khai báo trong tệp speed-backend/pom.xml gồm Java 21, Spring Boot 3.4.1, JUnit 5, Mockito theo phong cách BDDMockito, AssertJ, JaCoCo 0.8.12 và Maven Surefire 3.5.2.'
 T 'Phạm vi số liệu chỉ gồm bộ kiểm thử đơn vị có áp dụng kỹ thuật giả lập nằm trong thư mục speed-backend/src/test/java. Hai lớp trong gói com.speed.delivery.demo gồm một lớp dùng giả lập và một lớp nạp Spring context cùng cơ sở dữ liệu H2 chỉ dùng để đối chứng, được tách riêng khi tính số liệu của bộ kiểm thử đơn vị.'
 
 H '1.2. Bộ kiểm thử hiện có' 2
-T 'Bảng dưới đây liệt kê 14 lớp kiểm thử đơn vị, số phương thức kiểm thử, số lượt chạy thực tế do Maven Surefire ghi nhận và số đối tượng phụ thuộc được thay bằng đối tượng giả lập. Số phương thức và số lượt chạy được đếm trực tiếp từ mã nguồn kiểm thử và từ báo cáo trong thư mục target/surefire-reports.'
+T 'Bảng dưới đây liệt kê 15 lớp kiểm thử đơn vị, số phương thức kiểm thử, số lượt chạy thực tế do Maven Surefire ghi nhận và số đối tượng phụ thuộc được thay bằng đối tượng giả lập. Số phương thức và số lượt chạy được đếm trực tiếp từ mã nguồn kiểm thử và từ báo cáo trong thư mục target/surefire-reports.'
 $h = @('Lớp kiểm thử', 'Số phương thức', 'Số lượt chạy', 'Số đối tượng phụ thuộc được giả lập')
 $r = @(
-    @('AuthServiceImplTest', '22', '22', '11'),
+    @('AuthServiceImplTest', '26', '26', '11'),
     @('OrderServiceImplTest', '17', '17', '10'),
     @('PaymentServiceImplTest', '10', '10', '2'),
-    @('VoucherServiceImplTest', '13', '13', '1'),
+    @('VoucherServiceImplTest', '18', '18', '1'),
+    @('WalletServiceImplTest', '16', '16', '3'),
     @('PricingServiceImplTest', '16', '22', '0'),
     @('DistanceServiceImplTest', '9', '10', '0'),
     @('CustomerServiceImplTest', '12', '12', '4'),
-    @('DriverServiceImplTest', '12', '12', '5'),
+    @('DriverServiceImplTest', '18', '18', '5'),
     @('AdminServiceImplTest', '10', '10', '5'),
     @('NotificationServiceImplTest', '7', '7', '1'),
     @('ReviewServiceImplTest', '7', '7', '5'),
     @('JwtTokenProviderTest', '10', '10', '0'),
     @('CustomUserDetailsServiceTest', '5', '5', '1'),
     @('SpeedApplicationTest', '1', '1', '0'),
-    @('Tổng của 14 lớp', '151', '158', '45')
+    @('Tổng của 15 lớp', '182', '189', '48')
 )
 Add-Table $h $r @(5.0, 2.6, 2.4, 6.5)
 D 'Hai lớp PricingServiceImplTest và DistanceServiceImplTest là lớp thuần logic nên không cần đối tượng giả lập, được kiểm thử trực tiếp để tránh lạm dụng kỹ thuật giả lập.'
-D 'Ba phương thức dùng chú thích ParameterizedTest nên số lượt chạy (158) lớn hơn số phương thức (151).'
-D 'Toàn bộ mã nguồn kiểm thử khai báo 45 đối tượng giả lập bằng Mock và 10 lớp cần kiểm thử bằng InjectMocks.'
-D 'Khi chạy lệnh mvn test không lọc lớp, Maven thực thi 163 lượt gồm 158 lượt của bộ kiểm thử đơn vị và 5 lượt của hai lớp đối chứng trong gói com.speed.delivery.demo. Kết quả ghi nhận: Tests run: 163, Failures: 0, Errors: 0, Skipped: 0 và BUILD SUCCESS.'
+D 'Ba phương thức dùng chú thích ParameterizedTest nên số lượt chạy (189) lớn hơn số phương thức (182).'
+D 'Toàn bộ mã nguồn kiểm thử khai báo 48 mối phụ thuộc được thay bằng đối tượng giả lập bằng chú thích Mock và 11 lớp cần kiểm thử được tiêm bằng InjectMocks.'
+D 'Khi chạy lệnh mvn test không lọc lớp, Maven thực thi 194 lượt gồm 189 lượt của bộ kiểm thử đơn vị và 5 lượt của hai lớp đối chứng trong gói com.speed.delivery.demo. Kết quả ghi nhận: Tests run: 194, Failures: 0, Errors: 0, Skipped: 0 và BUILD SUCCESS.'
 
 H '1.3. Nguồn số liệu và cách tái lập kết quả' 2
 T 'Nguyên tắc của báo cáo là chỉ trình bày số liệu đo được từ các lần chạy thật của bộ kiểm thử, không dùng số liệu ước lượng. Các nguồn dẫn chứng cụ thể như sau.'
-D 'Nhật ký chạy 158 lượt kiểm thử đơn vị kèm sinh báo cáo độ bao phủ: tệp bang_chung_so_lieu/run_158_kiem_thu_don_vi.log. Lệnh chạy: xóa tệp target/jacoco.exec rồi chạy mvn với tham số lọc đúng 14 lớp kiểm thử và đích test. Kết quả trong nhật ký: Tests run: 158, Failures: 0, Errors: 0, Skipped: 0, BUILD SUCCESS, tổng thời gian 18,114 giây.'
-D 'Câu lệnh cụ thể đã dùng, thực hiện tại thư mục speed-backend: mvn -Dtest=SpeedApplicationTest,AuthServiceImplTest,OrderServiceImplTest,PaymentServiceImplTest,VoucherServiceImplTest,PricingServiceImplTest,DistanceServiceImplTest,CustomerServiceImplTest,DriverServiceImplTest,AdminServiceImplTest,NotificationServiceImplTest,ReviewServiceImplTest,JwtTokenProviderTest,CustomUserDetailsServiceTest test'
-D 'Câu lệnh kiểm chứng tính độc lập: mvn -Dtest=AuthServiceImplTest -Djacoco.skip=true test; mvn -Dtest=AuthServiceImplTest$RegisterTests#register_Success -Djacoco.skip=true test; và mvn với tham số lọc 14 lớp cùng tham số -Djunit.jupiter.testmethod.order.default=org.junit.jupiter.api.MethodOrderer$Random -Djacoco.skip=true test để chạy theo thứ tự ngẫu nhiên.'
-D 'Nhật ký chạy toàn bộ: tệp bang_chung_so_lieu/run_163_toan_bo_co_demo.log, lệnh chạy là mvn test, tổng thời gian 35,846 giây. Nhật ký này còn chứa các dòng số liệu do hai lớp đối chứng tự in ra.'
-D 'Nhật ký kiểm chứng tính độc lập: tệp bang_chung_so_lieu/run_le_1_lop_kiem_thu.log cho lệnh chạy riêng lớp xác thực, tệp bang_chung_so_lieu/run_le_1_phuong_thuc.log cho lệnh chạy riêng một phương thức kiểm thử, tệp bang_chung_so_lieu/run_thu_tu_ngau_nhien.log cho lần chạy lại toàn bộ với thứ tự phương thức ngẫu nhiên.'
+D 'Nhật ký chạy toàn bộ 194 lượt (gồm 189 lượt kiểm thử đơn vị và 5 lượt của hai lớp đối chứng) kèm kiểm tra chất lượng và sinh báo cáo độ bao phủ: tệp bang_chung_so_lieu/ket_qua_verify_mocking.log. Lệnh chạy: mvn clean verify. Kết quả trong nhật ký: Tests run: 194, Failures: 0, Errors: 0, Skipped: 0, BUILD SUCCESS, tổng thời gian 01:44 phút.'
+D 'Câu lệnh cụ thể đã dùng, thực hiện tại thư mục speed-backend: mvn -Dtest=SpeedApplicationTest,AuthServiceImplTest,OrderServiceImplTest,PaymentServiceImplTest,VoucherServiceImplTest,PricingServiceImplTest,DistanceServiceImplTest,CustomerServiceImplTest,DriverServiceImplTest,AdminServiceImplTest,NotificationServiceImplTest,ReviewServiceImplTest,JwtTokenProviderTest,CustomUserDetailsServiceTest,WalletServiceImplTest test'
+D 'Câu lệnh kiểm chứng tính độc lập: mvn -Dtest=AuthServiceImplTest -Djacoco.skip=true test; mvn -Dtest=AuthServiceImplTest$RegisterTests#register_Success -Djacoco.skip=true test; và mvn với tham số lọc 15 lớp cùng tham số -Djunit.jupiter.testmethod.order.default=org.junit.jupiter.api.MethodOrderer$Random -Djacoco.skip=true test để chạy theo thứ tự ngẫu nhiên.'
+D 'Nhật ký lần chạy đối chứng gốc: tệp bang_chung_so_lieu/run_163_toan_bo_co_demo.log (lần đo ngày 30 tháng 9 năm 2026). Lần đo lại ngày 18 tháng 10 năm 2026 ghi nhận trong tệp ket_qua_verify_mocking.log; nhật ký này cũng chứa các dòng số liệu do hai lớp đối chứng tự in ra.'
+D 'Nhật ký kiểm chứng tính độc lập (đo ngày 18 tháng 10 năm 2026): tệp bang_chung_so_lieu/run_le_auth_189.log cho lệnh chạy riêng lớp xác thực, tệp bang_chung_so_lieu/run_le_1method_189.log cho lệnh chạy riêng một phương thức kiểm thử, tệp bang_chung_so_lieu/run_thu_tu_ngau_nhien_189.log cho lần chạy lại toàn bộ với thứ tự phương thức ngẫu nhiên.'
 D 'Số liệu thời gian chạy của từng lớp được đọc từ cột Time elapsed trong thư mục target/surefire-reports; tổng thời gian toàn lệnh được đọc từ dòng Total time của nhật ký chạy.'
-D 'Số liệu độ bao phủ được đọc từ tệp target/site/jacoco/jacoco.csv do JaCoCo sinh ra; bản lưu của lần đo sạch là tệp bang_chung_so_lieu/jacoco_158_luot.csv.'
+D 'Số liệu độ bao phủ được đọc từ tệp target/site/jacoco/jacoco.csv do JaCoCo sinh ra; bản lưu của lần đo ngày 18 tháng 10 năm 2026 là tệp bang_chung_so_lieu/jacoco_do_bao_phu_194.csv.'
 D 'Bảng ma trận kiểm thử ở mục 2 được đối chiếu với hai tài liệu đã có trong dự án là BAO_CAO_THIET_KE_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md và MA_TRAN_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md, đồng thời kiểm tra lại trực tiếp trong mã nguồn kiểm thử.'
-D 'Lưu ý về độ biến thiên: thời gian chạy phụ thuộc trạng thái máy vì lần chạy đầu phải nạp lớp vào bộ nhớ. Hai lần chạy riêng bộ 158 lượt trong cùng buổi đo cho tổng thời gian tầng kiểm thử lần lượt là 7,156 giây và 10,238 giây, còn tổng thời gian toàn lệnh Maven là 12,801 giây và 18,114 giây. Mục 3 trình bày số liệu của lần chạy cuối cùng vì đó là lần có đầy đủ nhật ký và tệp độ bao phủ được lưu lại.'
+D 'Lưu ý về độ biến thiên: thời gian chạy phụ thuộc trạng thái máy vì lần chạy đầu phải nạp lớp vào bộ nhớ. Ba lệnh kiểm chứng độc lập (chạy riêng một lớp, chạy riêng một phương thức, chạy lại toàn bộ theo thứ tự ngẫu nhiên) có tổng thời gian toàn lệnh Maven lần lượt là 17,099 giây, 14,302 giây và 20,554 giây, phần lớn dành cho việc nạp lớp lần đầu. Mục 3 trình bày số liệu của lần chạy đầy đủ ngày 18 tháng 10 năm 2026 vì đó là lần có đầy đủ nhật ký và tệp độ bao phủ được lưu lại.'
 # ================= MUC 2: THIET KE MA TRAN KIEM THU =================
 H '2. Thiết kế ma trận kiểm thử theo ba loại đường dẫn' 1
 H '2.1. Ba loại đường dẫn kiểm thử' 2
@@ -206,27 +207,27 @@ Add-Table $h $r @(3.6, 4.0, 8.9)
 T 'Ngoài ba loại đường dẫn trên, kỹ thuật kiểm thử chuyển đổi trạng thái còn được áp dụng cho vòng đời của đơn hàng, từ trạng thái chờ xử lý sang đã xác nhận, đã gán tài xế, đang giao, đã giao hoặc đã hủy. Các kiểm thử cập nhật trạng thái đúng luồng thuộc đường dẫn thuận lợi, còn cập nhật sai luồng thuộc đường dẫn ngoại lệ.'
 
 H '2.2. Kỹ thuật giả lập tương ứng với từng loại đường dẫn' 2
-T 'Vai trò của kỹ thuật giả lập là tạo ra được các tình huống biên và tình huống lỗi một cách có kiểm soát, điều gần như không thể thực hiện nếu phải dùng đối tượng thật như cơ sở dữ liệu, cổng thanh toán hoặc máy chủ gửi thư. Bảng dưới đây thống kê số lần xuất hiện của từng kỹ thuật trong mã nguồn kiểm thử đơn vị, số liệu được đếm trực tiếp trên 14 tệp kiểm thử.'
+T 'Vai trò của kỹ thuật giả lập là tạo ra được các tình huống biên và tình huống lỗi một cách có kiểm soát, điều gần như không thể thực hiện nếu phải dùng đối tượng thật như cơ sở dữ liệu, cổng thanh toán hoặc máy chủ gửi thư. Bảng dưới đây thống kê số lần xuất hiện của từng kỹ thuật trong mã nguồn kiểm thử đơn vị, số liệu được đếm trực tiếp trên 15 tệp kiểm thử.'
 $h = @('Kỹ thuật trong mã nguồn kiểm thử', 'Số lần xuất hiện', 'Loại đường dẫn sử dụng chính')
 $r = @(
-    @('Thiết lập giá trị trả về cho đối tượng giả lập bằng given và willReturn', '221', 'Đường dẫn thuận lợi và trường hợp biên'),
-    @('Khẳng định kết quả bằng assertThat', '171', 'Cả ba loại đường dẫn'),
-    @('Kiểm chứng tương tác bằng then và should', '118', 'Cả ba loại đường dẫn'),
-    @('Khẳng định có ngoại lệ bằng assertThatThrownBy', '46', 'Đường dẫn ngoại lệ'),
-    @('Bắt đối tượng truyền vào bằng ArgumentCaptor', '27', 'Đường dẫn thuận lợi và trường hợp biên'),
-    @('Kiểm chứng không có tương tác bằng shouldHaveNoInteractions', '26', 'Đường dẫn ngoại lệ, để chứng minh dừng sớm'),
-    @('Kiểm chứng không được gọi bằng never', '24', 'Đường dẫn ngoại lệ và trường hợp biên'),
-    @('Kiểm chứng thứ tự gọi bằng InOrder', '7', 'Đường dẫn thuận lợi'),
+    @('Thiết lập giá trị trả về cho đối tượng giả lập bằng given và willReturn', '268', 'Đường dẫn thuận lợi và trường hợp biên'),
+    @('Khẳng định kết quả bằng assertThat', '222', 'Cả ba loại đường dẫn'),
+    @('Kiểm chứng tương tác bằng then và should', '184', 'Cả ba loại đường dẫn'),
+    @('Khẳng định có ngoại lệ bằng assertThatThrownBy', '64', 'Đường dẫn ngoại lệ'),
+    @('Bắt đối tượng truyền vào bằng ArgumentCaptor', '37', 'Đường dẫn thuận lợi và trường hợp biên'),
+    @('Kiểm chứng không có tương tác bằng shouldHaveNoInteractions', '46', 'Đường dẫn ngoại lệ, để chứng minh dừng sớm'),
+    @('Kiểm chứng không được gọi bằng never', '30', 'Đường dẫn ngoại lệ và trường hợp biên'),
+    @('Kiểm chứng thứ tự gọi bằng InOrder', '20', 'Đường dẫn thuận lợi'),
     @('Mô phỏng lỗi từ đối tượng phụ thuộc bằng willThrow', '1', 'Đường dẫn ngoại lệ')
 )
 Add-Table $h $r @(8.6, 2.9, 5.0)
 D 'Số lần dùng willThrow chỉ là 1, đặt tại AuthServiceImplTest với ngoại lệ BadCredentialsException. Phần lớn đường dẫn ngoại lệ còn lại được tạo bằng cách cho đối tượng giả lập trả về trạng thái vi phạm quy tắc nghiệp vụ, ví dụ đơn hàng không đúng trạng thái, tài xế không sẵn sàng, mã giảm giá hết hạn hoặc đã hết lượt sử dụng.'
-D 'Cấu trúc tổ chức kiểm thử trong dự án: 10 trong 14 lớp kiểm thử dùng chú thích ExtendWith với MockitoExtension để chạy thuần trên máy ảo Java mà không nạp Spring context; 13 tệp có phương thức dựng dữ liệu bằng BeforeEach; 34 lớp lồng nhau dùng chú thích Nested để nhóm kiểm thử theo chức năng con.'
+D 'Cấu trúc tổ chức kiểm thử trong dự án: 11 trong 15 lớp kiểm thử dùng chú thích ExtendWith với MockitoExtension để chạy thuần trên máy ảo Java mà không nạp Spring context; 14 tệp có phương thức dựng dữ liệu bằng BeforeEach; 41 lớp lồng nhau dùng chú thích Nested để nhóm kiểm thử theo chức năng con.'
 H '2.3. Ma trận kiểm thử chi tiết theo từng nhóm chức năng' 2
-T 'Mỗi bảng dưới đây là ma trận kiểm thử của một nhóm chức năng. Cột mã kiểm thử giữ theo mã đã dùng trong mã nguồn kiểm thử (tên hiển thị của từng phương thức), cột đường dẫn ghi loại đường dẫn theo ba loại đã định nghĩa ở mục 2.1. Toàn bộ test case trong các bảng đã được hiện thực và đều đạt trong lần chạy 158 lượt.'
+T 'Mỗi bảng dưới đây là ma trận kiểm thử của một nhóm chức năng. Cột mã kiểm thử giữ theo mã đã dùng trong mã nguồn kiểm thử (tên hiển thị của từng phương thức), cột đường dẫn ghi loại đường dẫn theo ba loại đã định nghĩa ở mục 2.1. Toàn bộ test case trong các bảng đã được hiện thực và đều đạt trong lần chạy 189 lượt.'
 
 H '2.3.1. Nhóm chức năng xác thực và tài khoản người dùng' 3
-TL 'Lớp kiểm thử: AuthServiceImplTest, 22 lượt chạy, 11 đối tượng phụ thuộc được giả lập.'
+TL 'Lớp kiểm thử: AuthServiceImplTest, 26 lượt chạy, 11 đối tượng phụ thuộc được giả lập.'
 $h = @('Mã kiểm thử', 'Đường dẫn', 'Kịch bản kiểm thử', 'Thiết lập đối tượng giả lập', 'Kết quả kỳ vọng')
 $r = @(
     @('TC01', 'Thuận lợi', 'Đăng ký tài khoản thành công', 'existsByEmail trả về false, existsByPhone trả về false, findByName trả về vai trò, save trả về người dùng, xác thực thành công, sinh được token', 'Trả về phản hồi chứa token truy cập và token làm mới, có gửi thư chào mừng'),
@@ -250,7 +251,11 @@ $r = @(
     @('TC19', 'Ngoại lệ', 'Đổi mật khẩu với mật khẩu cũ sai', 'matches trả về false', 'Ném BadRequestException'),
     @('TC20', 'Thuận lợi', 'Đăng xuất và thu hồi token', 'findByToken trả về bản ghi token', 'Token bị thu hồi và ghi nhật ký hành động đăng xuất'),
     @('TC21', 'Biên', 'Đăng xuất với token không tồn tại', 'findByToken trả về rỗng', 'Không ném ngoại lệ, bỏ qua an toàn'),
-    @('TC22', 'Thuận lợi', 'Lấy thông tin cá nhân thành công', 'findByEmail trả về người dùng', 'Trả về phản hồi đầy đủ thông tin và vai trò')
+    @('TC22', 'Thuận lợi', 'Lấy thông tin cá nhân thành công', 'findByEmail trả về người dùng', 'Trả về phản hồi đầy đủ thông tin và vai trò'),
+    @('TC23', 'Biên', 'Đăng ký với vai trò tài xế', 'findByName trả về vai trò ROLE_DRIVER, hồ sơ tài xế được lưu', 'Người dùng và hồ sơ Driver được tạo, không tạo hồ sơ Customer'),
+    @('TC24', 'Thuận lợi', 'Cập nhật hồ sơ với đủ ba trường', 'findByEmail trả về người dùng, existsByPhone trả về false', 'Cả ba trường được lưu kèm ghi nhật ký cập nhật'),
+    @('TC25', 'Ngoại lệ', 'Cập nhật với số điện thoại trùng người khác', 'existsByPhone trả về true', 'Ném DuplicateResourceException và dừng sớm, không lưu và không ghi nhật ký'),
+    @('TC26', 'Ngoại lệ', 'Cập nhật khi người dùng không tồn tại', 'findByEmail trả về rỗng', 'Ném ResourceNotFoundException và không lưu')
 )
 Add-Table $h $r $w5
 H '2.3.2. Nhóm chức năng quản lý đơn hàng' 3
@@ -294,7 +299,7 @@ $r = @(
 )
 Add-Table $h $r $w5
 H '2.3.4. Nhóm chức năng mã giảm giá' 3
-TL 'Lớp kiểm thử: VoucherServiceImplTest, 13 lượt chạy, 1 đối tượng phụ thuộc được giả lập.'
+TL 'Lớp kiểm thử: VoucherServiceImplTest, 18 lượt chạy, 1 đối tượng phụ thuộc được giả lập.'
 $h = @('Mã kiểm thử', 'Đường dẫn', 'Kịch bản kiểm thử', 'Thiết lập đối tượng giả lập', 'Kết quả kỳ vọng')
 $r = @(
     @('VOU-01', 'Thuận lợi', 'Kiểm tra mã giảm giá hợp lệ', 'Mã đang hoạt động, còn thời hạn, còn lượt và đủ giá trị tối thiểu', 'Trả về mã giảm giá'),
@@ -309,7 +314,12 @@ $r = @(
     @('VOU-10', 'Thuận lợi', 'Áp mã giảm theo số tiền cố định', 'Loại giảm giá cố định', 'Số tiền giảm bằng giá trị cấu hình của mã'),
     @('VOU-11', 'Thuận lợi', 'Lấy danh sách mã đang hoạt động', 'findActiveVouchers trả về danh sách', 'Trả về danh sách mã đang hoạt động'),
     @('VOU-12', 'Thuận lợi', 'Tạo mã giảm giá thành công', 'findByCode trả về rỗng, save trả về mã giảm giá', 'Mã giảm giá được lưu'),
-    @('VOU-13', 'Ngoại lệ', 'Tạo mã giảm giá đã tồn tại', 'findByCode trả về mã đã có', 'Ném BadRequestException')
+    @('VOU-13', 'Ngoại lệ', 'Tạo mã giảm giá đã tồn tại', 'findByCode trả về mã đã có', 'Ném BadRequestException'),
+    @('VOU-14', 'Thuận lợi', 'Lấy mã giảm giá theo mã định danh thành công', 'findById trả về mã giảm giá', 'Phản hồi khớp dữ liệu'),
+    @('VOU-15', 'Ngoại lệ', 'Lấy mã giảm giá theo mã định danh không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('VOU-16', 'Thuận lợi', 'Lấy toàn bộ danh sách mã giảm giá', 'findAll trả về danh sách', 'Danh sách mã giảm giá đầy đủ'),
+    @('VOU-17', 'Thuận lợi', 'Đổi trạng thái mã đang hoạt động sang vô hiệu hóa', 'isActive bằng true', 'isActive chuyển thành false và mã được lưu'),
+    @('VOU-18', 'Thuận lợi', 'Đổi trạng thái mã đang vô hiệu sang hoạt động', 'isActive bằng false', 'isActive chuyển thành true và mã được lưu')
 )
 Add-Table $h $r $w5
 
@@ -371,7 +381,7 @@ $r = @(
 Add-Table $h $r $w5
 
 H '2.3.8. Nhóm chức năng tài xế' 3
-TL 'Lớp kiểm thử: DriverServiceImplTest, 12 lượt chạy, 5 đối tượng phụ thuộc được giả lập.'
+TL 'Lớp kiểm thử: DriverServiceImplTest, 18 lượt chạy, 5 đối tượng phụ thuộc được giả lập.'
 $h = @('Mã kiểm thử', 'Đường dẫn', 'Kịch bản kiểm thử', 'Thiết lập đối tượng giả lập', 'Kết quả kỳ vọng')
 $r = @(
     @('DR-TC01', 'Thuận lợi', 'Bật trạng thái sẵn sàng nhận đơn', 'findById trả về tài xế đang ngoại tuyến', 'Trạng thái chuyển thành trực tuyến, isAvailable bằng true và ghi nhật ký'),
@@ -385,7 +395,13 @@ $r = @(
     @('DR-TC09', 'Ngoại lệ', 'Hoàn thành đơn hàng chưa ở trạng thái đang giao', 'Đơn hàng ở trạng thái ASSIGNED', 'Ném BadRequestException'),
     @('DR-TC10', 'Thuận lợi', 'Lấy lịch sử giao hàng', 'findById thành công', 'Ủy quyền sang hàm lấy đơn hàng của tài xế'),
     @('DR-TC11', 'Thuận lợi', 'Lấy thu nhập của tài xế', 'totalEarnings trả về 800.000 đồng', 'Trả về đúng số tiền'),
-    @('DR-TC12', 'Ngoại lệ', 'Lấy thu nhập khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException')
+    @('DR-TC12', 'Ngoại lệ', 'Lấy thu nhập khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('DR-TC13', 'Thuận lợi', 'Lấy hồ sơ tài xế thành công', 'findById trả về tài xế', 'Phản hồi đầy đủ các trường của hồ sơ'),
+    @('DR-TC14', 'Ngoại lệ', 'Lấy hồ sơ khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('DR-TC15', 'Ngoại lệ', 'Nhận đơn hàng khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('DR-TC16', 'Ngoại lệ', 'Hoàn thành giao hàng khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('DR-TC17', 'Ngoại lệ', 'Lấy lịch sử giao hàng khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('DR-TC18', 'Ngoại lệ', 'Từ chối đơn hàng không tồn tại', 'findById của kho đơn hàng trả về rỗng', 'Ném ResourceNotFoundException')
 )
 Add-Table $h $r $w5
 H '2.3.9. Nhóm chức năng quản trị' 3
@@ -459,32 +475,56 @@ $r = @(
     @('UD-TC05', 'Thuận lợi', 'Kiểm chứng kho dữ liệu chỉ được gọi một lần', 'Không phát sinh lời gọi thừa')
 )
 Add-Table $h $r $w4
-TL 'Lớp kiểm thử khởi động: SpeedApplicationTest gồm 1 lượt chạy, kiểm tra lớp ứng dụng nạp được; kết quả đạt với thời gian 0,015 giây và không có lỗi.'
+TL 'Lớp kiểm thử khởi động: SpeedApplicationTest gồm 1 lượt chạy, kiểm tra lớp ứng dụng nạp được; kết quả đạt với thời gian 0,021 giây và không có lỗi.'
+
+H '2.3.13. Nhóm chức năng ví tài xế' 3
+TL 'Lớp kiểm thử: WalletServiceImplTest, 16 lượt chạy, 3 đối tượng phụ thuộc được giả lập.'
+$h = @('Mã kiểm thử', 'Đường dẫn', 'Kịch bản kiểm thử', 'Thiết lập đối tượng giả lập', 'Kết quả kỳ vọng')
+$r = @(
+    @('WL-TC01', 'Thuận lợi', 'Lấy ví thành công khi ví đã tồn tại', 'findById trả về tài xế, findByDriverId trả về ví', 'Phản hồi đúng chủ và số dư, không tạo ví mới'),
+    @('WL-TC02', 'Biên', 'Lấy ví khi chưa có ví thì tự tạo ví mới số dư 0', 'findByDriverId trả về rỗng, save trả về ví mới', 'Ví mới số dư 0 được lưu, kiểm chứng nội dung bằng ArgumentCaptor'),
+    @('WL-TC03', 'Ngoại lệ', 'Lấy ví khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException và không chạm kho ví'),
+    @('WL-TC04', 'Thuận lợi', 'Cộng thu nhập thành công', 'Ví tồn tại, save trả về ví', 'Số dư 500.000 cộng 32.000 thành 532.000; giao dịch loại EARNING đúng đơn hàng'),
+    @('WL-TC05', 'Ngoại lệ', 'Cộng thu nhập với số tiền null', 'Không thiết lập', 'Ném BadRequestException và cả ba kho đều không được gọi'),
+    @('WL-TC06', 'Ngoại lệ', 'Cộng thu nhập với số tiền bằng 0', 'Không thiết lập', 'Ném BadRequestException'),
+    @('WL-TC07', 'Ngoại lệ', 'Cộng thu nhập với số tiền âm', 'Số tiền âm 1.000 đồng', 'Ném BadRequestException'),
+    @('WL-TC08', 'Ngoại lệ', 'Cộng thu nhập khi tài xế không tồn tại', 'findById trả về rỗng', 'Ném ResourceNotFoundException và không lưu giao dịch'),
+    @('WL-TC09', 'Biên', 'Cộng thu nhập khi ví chưa tồn tại thì tự tạo rồi cộng', 'findByDriverId trả về rỗng', 'Hàm lưu được gọi hai lần cho việc tạo ví và cập nhật, kèm một giao dịch'),
+    @('WL-TC10', 'Thuận lợi', 'Lấy lịch sử giao dịch có phân trang', 'findByWalletId trả về PageImpl', 'Phản hồi đúng dữ liệu; mã đơn hàng bằng null khi giao dịch không gắn đơn'),
+    @('WL-TC11', 'Ngoại lệ', 'Lấy lịch sử giao dịch khi chưa có ví', 'findByDriverId trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('WL-TC12', 'Thuận lợi', 'Rút tiền thành công', 'Ví đủ số dư', 'Số dư 500.000 trừ 100.000 còn 400.000; giao dịch loại WITHDRAWAL'),
+    @('WL-TC13', 'Ngoại lệ', 'Rút tiền với số tiền null', 'Không thiết lập', 'Ném BadRequestException'),
+    @('WL-TC14', 'Ngoại lệ', 'Rút tiền với số tiền không dương', 'Số tiền âm 50.000 đồng', 'Ném BadRequestException'),
+    @('WL-TC15', 'Ngoại lệ', 'Rút tiền khi chưa có ví', 'findByDriverId trả về rỗng', 'Ném ResourceNotFoundException'),
+    @('WL-TC16', 'Ngoại lệ', 'Rút tiền vượt quá số dư', 'Số dư 500.000, rút 600.000', 'Ném BadRequestException; số dư giữ nguyên và không lưu')
+)
+Add-Table $h $r $w5
 
 H '2.4. Tổng hợp độ phủ ba loại đường dẫn' 2
-T 'Bảng dưới đây tổng hợp số test case theo từng loại đường dẫn của 14 lớp kiểm thử. Số liệu được tổng hợp từ bảng phân loại đường dẫn của tài liệu BAO_CAO_THIET_KE_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md và đối chiếu với các bảng ma trận chi tiết ở mục 2.3; các phương thức dùng nhiều bộ dữ liệu được tính theo số lượt chạy nên tổng bằng 158 lượt.'
+T 'Bảng dưới đây tổng hợp số test case theo từng loại đường dẫn của 15 lớp kiểm thử. Số liệu được tổng hợp từ bảng phân loại đường dẫn của tài liệu BAO_CAO_THIET_KE_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md và đối chiếu với các bảng ma trận chi tiết ở mục 2.3; các phương thức dùng nhiều bộ dữ liệu được tính theo số lượt chạy nên tổng bằng 189 lượt.'
 $h = @('Nhóm chức năng', 'Đường dẫn thuận lợi', 'Trường hợp biên', 'Đường dẫn ngoại lệ', 'Tổng số lượt')
 $r = @(
-    @('Xác thực và tài khoản', '10', '1', '11', '22'),
+    @('Xác thực và tài khoản', '11', '2', '13', '26'),
     @('Quản lý đơn hàng', '11', '0', '6', '17'),
     @('Thanh toán', '5', '2', '3', '10'),
-    @('Mã giảm giá', '5', '1', '7', '13'),
+    @('Mã giảm giá', '9', '1', '8', '18'),
     @('Tính giá', '15', '7', '0', '22'),
     @('Tính khoảng cách', '8', '2', '0', '10'),
     @('Khách hàng và địa chỉ', '8', '0', '4', '12'),
-    @('Tài xế', '7', '0', '5', '12'),
+    @('Tài xế', '8', '0', '10', '18'),
+    @('Ví tài xế', '4', '2', '10', '16'),
     @('Quản trị', '6', '1', '3', '10'),
     @('Thông báo', '6', '1', '0', '7'),
     @('Đánh giá', '2', '0', '5', '7'),
     @('Bảo mật token', '8', '2', '0', '10'),
     @('An toàn người dùng', '3', '1', '1', '5'),
     @('Khởi động ứng dụng', '1', '0', '0', '1'),
-    @('Tổng cộng', '95', '18', '45', '158'),
-    @('Tỉ lệ trên tổng số lượt', '60,1 phần trăm', '11,4 phần trăm', '28,5 phần trăm', '100 phần trăm')
+    @('Tổng cộng', '105', '21', '63', '189'),
+    @('Tỉ lệ trên tổng số lượt', '55,6 phần trăm', '11,1 phần trăm', '33,3 phần trăm', '100 phần trăm')
 )
 Add-Table $h $r @(4.6, 3.0, 2.9, 3.0, 3.0)
-D 'Bộ kiểm thử hiện tại mạnh ở đường dẫn thuận lợi với 60,1 phần trăm và đường dẫn ngoại lệ với 28,5 phần trăm, đây là đặc trưng khi áp dụng kỹ thuật giả lập vì có thể mô phỏng lỗi của đối tượng phụ thuộc một cách có kiểm soát.'
-D 'Đường dẫn biên chỉ chiếm 11,4 phần trăm và tập trung ở các lớp thuần logic như tính giá, tính khoảng cách cùng các xử lý giá trị rỗng; ba nhóm quản lý đơn hàng, khách hàng và tài xế chưa có test case biên, cần bổ sung theo phần thiết kế bổ sung tại mục 3.14 của tài liệu BAO_CAO_THIET_KE_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md.'
+D 'Bộ kiểm thử hiện tại mạnh ở đường dẫn thuận lợi với 55,6 phần trăm và đường dẫn ngoại lệ với 33,3 phần trăm, đây là đặc trưng khi áp dụng kỹ thuật giả lập vì có thể mô phỏng lỗi của đối tượng phụ thuộc một cách có kiểm soát.'
+D 'Đường dẫn biên chỉ chiếm 11,1 phần trăm và tập trung ở các lớp thuần logic như tính giá, tính khoảng cách cùng các xử lý giá trị rỗng và tự tạo ví; ba nhóm quản lý đơn hàng, khách hàng và tài xế chưa có test case biên, cần bổ sung theo phần thiết kế bổ sung tại mục 3.15 của tài liệu BAO_CAO_THIET_KE_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md.'
 # ================= MUC 3: THOI GIAN CHAY =================
 H '3. Tiêu chí đo lường thứ nhất: thời gian chạy' 1
 H '3.1. Cách xác định và cách đo' 2
@@ -492,7 +532,7 @@ T 'Thời gian chạy là tổng thời gian bộ kiểm thử thực thi. Chỉ
 $h = @('Chỉ số', 'Cách xác định')
 $r = @(
     @('Thời gian của từng lớp kiểm thử', 'Giá trị Time elapsed của từng lớp trong báo cáo Maven Surefire, đọc tại thư mục target/surefire-reports.'),
-    @('Tổng thời gian tầng kiểm thử', 'Tổng các giá trị Time elapsed của 14 lớp kiểm thử tính theo lớp ngoài cùng, không cộng thêm phần của các lớp lồng nhau để tránh trùng số.'),
+    @('Tổng thời gian tầng kiểm thử', 'Tổng các giá trị Time elapsed của 15 lớp kiểm thử tính theo lớp ngoài cùng, không cộng thêm phần của các lớp lồng nhau để tránh trùng số.'),
     @('Thời gian trung bình mỗi lượt', 'Lấy tổng thời gian tầng kiểm thử chia cho tổng số lượt chạy.'),
     @('Thời gian toàn lệnh Maven', 'Giá trị Total time trong nhật ký chạy, đã gồm thời gian kiểm tra biên dịch, chạy kiểm thử và sinh báo cáo độ bao phủ.')
 )
@@ -502,7 +542,7 @@ T 'Công cụ đo là Maven Surefire phiên bản 3.5.2 và JaCoCo phiên bản 
 H '3.2. Ngưỡng chấp nhận đề ra' 2
 $h = @('Mã', 'Tiêu chí', 'Ngưỡng')
 $r = @(
-    @('TG-1', 'Tổng thời gian tầng kiểm thử của 158 lượt chạy', 'Không quá 30 giây'),
+    @('TG-1', 'Tổng thời gian tầng kiểm thử của 189 lượt chạy', 'Không quá 30 giây'),
     @('TG-2', 'Thời gian trung bình mỗi lượt chạy', 'Không quá 200 mili giây'),
     @('TG-3', 'Thời gian của mỗi lớp kiểm thử', 'Không quá 5 giây'),
     @('TG-4', 'Khả năng chạy lặp lại cho cùng kết quả', 'Đạt 100 phần trăm qua các lần chạy')
@@ -511,53 +551,54 @@ Add-Table $h $r @(1.8, 8.2, 6.5)
 T 'Các ngưỡng trên do đồ án đề ra dựa trên nguyên tắc giữ cho quá trình tích hợp liên tục luôn nhanh, vì mỗi lần thay đổi mã nguồn đều cần chạy lại toàn bộ kiểm thử.'
 
 H '3.3. Kết quả đo của bộ kiểm thử đơn vị' 2
-T 'Bảng dưới đây là thời gian của từng lớp kiểm thử trong lần chạy 158 lượt ngày 30 tháng 9 năm 2026, số liệu đọc từ cột Time elapsed của báo cáo Surefire và lưu trong tệp bang_chung_so_lieu/run_158_kiem_thu_don_vi.log.'
+T 'Bảng dưới đây là thời gian của từng lớp kiểm thử trong lần chạy 189 lượt ngày 18 tháng 10 năm 2026, số liệu đọc từ cột Time elapsed của báo cáo Surefire và lưu trong tệp bang_chung_so_lieu/ket_qua_verify_mocking.log.'
 $h = @('Lớp kiểm thử', 'Số lượt', 'Thời gian (giây)')
 $r = @(
-    @('CustomUserDetailsServiceTest', '5', '4,844'),
-    @('JwtTokenProviderTest', '10', '1,784'),
-    @('AuthServiceImplTest', '22', '1,014'),
-    @('AdminServiceImplTest', '10', '0,589'),
-    @('OrderServiceImplTest', '17', '0,564'),
-    @('DriverServiceImplTest', '12', '0,238'),
-    @('CustomerServiceImplTest', '12', '0,225'),
-    @('DistanceServiceImplTest', '10', '0,223'),
-    @('PaymentServiceImplTest', '10', '0,184'),
-    @('NotificationServiceImplTest', '7', '0,174'),
-    @('VoucherServiceImplTest', '13', '0,164'),
-    @('ReviewServiceImplTest', '7', '0,156'),
-    @('PricingServiceImplTest', '22', '0,064'),
-    @('SpeedApplicationTest', '1', '0,015'),
-    @('Tổng của 14 lớp', '158', '10,238')
+    @('OrderServiceImplTest', '17', '0,901'),
+    @('WalletServiceImplTest', '16', '0,515'),
+    @('DriverServiceImplTest', '18', '0,423'),
+    @('AuthServiceImplTest', '26', '0,362'),
+    @('VoucherServiceImplTest', '18', '0,356'),
+    @('AdminServiceImplTest', '10', '0,333'),
+    @('CustomerServiceImplTest', '12', '0,292'),
+    @('JwtTokenProviderTest', '10', '0,266'),
+    @('ReviewServiceImplTest', '7', '0,265'),
+    @('DistanceServiceImplTest', '10', '0,263'),
+    @('PaymentServiceImplTest', '10', '0,251'),
+    @('NotificationServiceImplTest', '7', '0,245'),
+    @('PricingServiceImplTest', '22', '0,136'),
+    @('CustomUserDetailsServiceTest', '5', '0,092'),
+    @('SpeedApplicationTest', '1', '0,021'),
+    @('Tổng của 15 lớp', '189', '4,721')
 )
 Add-Table $h $r @(7.0, 2.5, 7.0)
-D 'Tổng thời gian tầng kiểm thử của 158 lượt là 10,238 giây, tương đương 64,8 mili giây cho mỗi lượt.'
-D 'Thời gian toàn lệnh Maven cho 158 lượt, đã gồm bước sinh báo cáo độ bao phủ, là 18,114 giây. Lần chạy liền trước trong cùng buổi đo ghi nhận 12,801 giây; phần chênh lệch nằm ở thời gian nạp lớp lần đầu của máy ảo Java.'
-D 'Lớp lâu nhất là CustomUserDetailsServiceTest với 4,844 giây do đây là lớp được chạy đầu tiên trong lượt chạy; các lớp còn lại đều dưới 1,8 giây.'
-D 'Lớp xác thực dù có 22 lượt chạy và 11 đối tượng phụ thuộc giả lập nhưng chỉ tốn 1,014 giây, cho thấy chi phí chủ yếu nằm ở lần nạp lớp đầu tiên chứ không nằm ở logic kiểm thử.'
-D 'Kết quả chạy lặp: trong cùng buổi đo, bộ kiểm thử được chạy nhiều lần với các cấu hình khác nhau (có và không sinh báo cáo độ bao phủ, thứ tự ngẫu nhiên, chạy riêng từng lớp) và mọi lần đều đạt 158 trên 158 lượt, không có lỗi.'
+D 'Tổng thời gian tầng kiểm thử của 189 lượt là 4,721 giây, tương đương 25,0 mili giây cho mỗi lượt.'
+D 'Thời gian toàn lệnh Maven của lần đo ngày 18 tháng 10 năm 2026, đã gồm bước kiểm tra chất lượng và sinh báo cáo độ bao phủ, được nhật ký ghi nhận là 01:44 phút.'
+D 'Lớp lâu nhất là OrderServiceImplTest với 0,901 giây; các lớp còn lại đều dưới 0,6 giây.'
+D 'Lớp xác thực dù có 26 lượt chạy và 11 đối tượng phụ thuộc giả lập nhưng chỉ tốn 0,362 giây, cho thấy chi phí chủ yếu nằm ở lần nạp lớp đầu tiên chứ không nằm ở logic kiểm thử.'
+D 'Kết quả chạy lặp: trong cùng buổi đo, bộ kiểm thử được chạy nhiều lần với các cấu hình khác nhau (có và không sinh báo cáo độ bao phủ, thứ tự ngẫu nhiên, chạy riêng từng lớp) và mọi lần đều đạt 189 trên 189 lượt, không có lỗi.'
 
 H '3.4. Đối chứng giữa có và không dùng kỹ thuật giả lập' 2
-T 'Hai lớp trong gói com.speed.delivery.demo kiểm thử cùng một luồng đăng nhập theo hai cách khác nhau: lớp MockingDemoTest thay toàn bộ 11 đối tượng phụ thuộc bằng đối tượng giả lập, còn lớp SpringContextDemoTest nạp toàn bộ Spring context cùng cơ sở dữ liệu H2 và tạo dữ liệu thật. Số liệu dưới đây đọc từ nhật ký bang_chung_so_lieu/run_163_toan_bo_co_demo.log.'
+T 'Hai lớp trong gói com.speed.delivery.demo kiểm thử cùng một luồng đăng nhập theo hai cách khác nhau: lớp MockingDemoTest thay toàn bộ 11 đối tượng phụ thuộc bằng đối tượng giả lập, còn lớp SpringContextDemoTest nạp toàn bộ Spring context cùng cơ sở dữ liệu H2 và tạo dữ liệu thật. Số liệu dưới đây đọc từ nhật ký bang_chung_so_lieu/ket_qua_verify_mocking.log.'
 $h = @('Nội dung so sánh', 'Lớp có dùng kỹ thuật giả lập', 'Lớp không dùng kỹ thuật giả lập')
 $r = @(
     @('Số lượt kiểm thử', '3', '2'),
-    @('Thời gian chạy của lớp', '7,051 giây', '20,58 giây'),
-    @('Thời gian khởi động nền tảng', 'Không phát sinh vì không nạp Spring context', '19.438 mili giây do lớp kiểm thử tự đo; nhật ký Spring ghi nhận Started in 16,805 giây'),
-    @('Chi phí cho một lần đăng nhập', '356,77 micro giây, đo từ 10.000 lần đăng nhập hết 3.567 mili giây', '79,70 mili giây, đo từ 10 lần đăng nhập hết 797 mili giây'),
+    @('Thời gian chạy của lớp', '15,54 giây', '41,65 giây'),
+    @('Thời gian khởi động nền tảng', 'Không phát sinh vì không nạp Spring context', '39.654 mili giây do lớp kiểm thử tự đo; nhật ký Spring ghi nhận Started in 31,835 giây'),
+    @('Chi phí cho một lần đăng nhập', '693,06 micro giây, đo từ 10.000 lần đăng nhập hết 6.930 mili giây', '270,60 mili giây, đo từ 10 lần đăng nhập hết 2.706 mili giây'),
     @('Dữ liệu kiểm thử', 'Dựng trong bộ nhớ bằng đối tượng giả lập', 'Phải tạo thật trong cơ sở dữ liệu H2 trước khi kiểm thử')
 )
 Add-Table $h $r @(4.6, 5.9, 6.0)
-D 'Từ hai số đo chi phí một lần đăng nhập, tỉ lệ chênh lệch tính theo công thức 79,70 chia cho 0,35677 xấp xỉ 223 lần; riêng thời gian khởi động nền tảng của lớp không dùng kỹ thuật giả lập là 19.438 mili giây, đã lớn hơn tổng thời gian tầng kiểm thử của cả 158 lượt kiểm thử đơn vị là 10,238 giây.'
-D 'Hai lớp đối chứng này chỉ dùng để so sánh và không được tính vào số liệu của bộ 158 lượt kiểm thử đơn vị.'
+D 'Từ hai số đo chi phí một lần đăng nhập, tỉ lệ chênh lệch tính theo công thức 270,60 chia cho 0,69306 xấp xỉ 390 lần; riêng thời gian khởi động nền tảng của lớp không dùng kỹ thuật giả lập là 39.654 mili giây, đã lớn hơn tổng thời gian tầng kiểm thử của cả 189 lượt kiểm thử đơn vị là 4,721 giây tới hơn 8 lần.'
+D 'Hai lớp đối chứng này chỉ dùng để so sánh và không được tính vào số liệu của bộ 189 lượt kiểm thử đơn vị.'
 
 H '3.5. Đánh giá tiêu chí thời gian chạy' 2
 $h = @('Mã', 'Ngưỡng', 'Kết quả đo', 'Kết luận')
 $r = @(
-    @('TG-1', 'Tổng thời gian tầng kiểm thử không quá 30 giây', '10,238 giây', 'Đạt'),
-    @('TG-2', 'Trung bình mỗi lượt không quá 200 mili giây', '64,8 mili giây', 'Đạt'),
-    @('TG-3', 'Mỗi lớp kiểm thử không quá 5 giây', 'Lớn nhất 4,844 giây', 'Đạt'),
-    @('TG-4', 'Chạy lặp lại cho cùng kết quả', 'Mọi lần chạy đều đạt 158 trên 158 lượt', 'Đạt')
+    @('TG-1', 'Tổng thời gian tầng kiểm thử không quá 30 giây', '4,721 giây', 'Đạt'),
+    @('TG-2', 'Trung bình mỗi lượt không quá 200 mili giây', '25,0 mili giây', 'Đạt'),
+    @('TG-3', 'Mỗi lớp kiểm thử không quá 5 giây', 'Lớn nhất 0,901 giây', 'Đạt'),
+    @('TG-4', 'Chạy lặp lại cho cùng kết quả', 'Mọi lần chạy đều đạt 189 trên 189 lượt', 'Đạt')
 )
 Add-Table $h $r @(1.6, 5.4, 4.9, 4.6)
 # ================= MUC 4: DO BAO PHU =================
@@ -573,73 +614,74 @@ $r = @(
 )
 Add-Table $h $r @(4.0, 6.0, 6.5)
 D 'Công cụ đo là JaCoCo phiên bản 0.8.12, khai báo trong tệp speed-backend/pom.xml và chạy ở pha test; kết quả gồm trang giao diện target/site/jacoco/index.html và tệp số liệu thô target/site/jacoco/jacoco.csv.'
-D 'Tệp pom.xml có khai báo quy tắc kiểm tra chất lượng với mức tối thiểu 90 phần trăm cho dòng và phương thức, 85 phần trăm cho nhánh, nhưng quy tắc này gắn với pha verify nên không chạy khi thực hiện lệnh mvn test.'
-D 'Lưu ý về phương pháp: công cụ ghi nối dữ liệu vào tệp target/jacoco.exec giữa các lần chạy, vì vậy trước khi đo độ bao phủ riêng cho bộ kiểm thử đơn vị phải xóa tệp này rồi mới chạy lại. Số liệu trong mục này đã được đo theo cách đó và lưu tại tệp bang_chung_so_lieu/jacoco_158_luot.csv.'
+D 'Tệp pom.xml có khai báo bước kiểm tra chất lượng jacoco:check gắn với pha verify: áp dụng theo từng lớp, giới hạn trong danh sách 12 lớp nghiệp vụ trọng tâm và yêu cầu độ bao phủ dòng tối thiểu 90 phần trăm. Lệnh mvn clean verify của lần đo ngày 18 tháng 10 năm 2026 đã chạy qua bước kiểm tra này và đạt.'
+D 'Lưu ý về phương pháp: công cụ ghi nối dữ liệu vào tệp target/jacoco.exec giữa các lần chạy, vì vậy số liệu độ bao phủ phải được đo trên một lần chạy sạch. Lần đo ngày 18 tháng 10 năm 2026 dùng lệnh mvn clean verify nên dữ liệu được đo sạch từ đầu; kết quả lưu tại tệp bang_chung_so_lieu/jacoco_do_bao_phu_194.csv.'
 
 H '4.2. Ngưỡng chấp nhận đề ra' 2
 $h = @('Mã', 'Tiêu chí', 'Ngưỡng', 'Nguồn ngưỡng')
 $r = @(
-    @('BP-1', 'Độ bao phủ dòng của từng lớp nghiệp vụ đã có kiểm thử', 'Từ 90 phần trăm trở lên', 'Quy tắc JaCoCo trong pom.xml'),
-    @('BP-2', 'Độ bao phủ nhánh của từng lớp nghiệp vụ có nhánh', 'Từ 85 phần trăm trở lên', 'Quy tắc JaCoCo trong pom.xml'),
-    @('BP-3', 'Độ bao phủ dòng tổng hợp của 11 lớp nghiệp vụ đã có kiểm thử', 'Từ 95 phần trăm trở lên', 'Đề xuất của đồ án'),
+    @('BP-1', 'Độ bao phủ dòng của từng lớp nghiệp vụ đã có kiểm thử', 'Từ 90 phần trăm trở lên', 'Quy tắc jacoco:check trong pom.xml, áp cho 12 lớp trọng tâm ở cấp lớp'),
+    @('BP-2', 'Độ bao phủ nhánh của từng lớp nghiệp vụ có nhánh', 'Từ 85 phần trăm trở lên', 'Đề xuất của đồ án, đo tham khảo'),
+    @('BP-3', 'Độ bao phủ dòng tổng hợp của 12 lớp nghiệp vụ đã có kiểm thử', 'Từ 95 phần trăm trở lên', 'Đề xuất của đồ án'),
     @('BP-4', 'Độ bao phủ dòng của toàn dự án gồm cả lớp điều khiển, lớp thực thể và lớp cấu hình', 'Từ 60 phần trăm trở lên', 'Đề xuất của đồ án'),
     @('BP-5', 'Số lớp nghiệp vụ còn ở mức 0 phần trăm', 'Không còn lớp nào', 'Đề xuất của đồ án')
 )
 Add-Table $h $r @(1.6, 6.6, 3.7, 4.6)
 
 H '4.3. Kết quả đo độ bao phủ' 2
-T 'Bảng dưới đây tổng hợp độ bao phủ theo phạm vi, số liệu rút từ tệp bang_chung_so_lieu/jacoco_158_luot.csv của lần chạy 158 lượt kiểm thử đơn vị.'
+T 'Bảng dưới đây tổng hợp độ bao phủ theo phạm vi, số liệu rút từ tệp bang_chung_so_lieu/jacoco_do_bao_phu_194.csv của lần chạy 189 lượt kiểm thử đơn vị.'
 $h = @('Phạm vi', 'Số lớp', 'Dòng đã phủ trên tổng', 'Tỉ lệ dòng', 'Nhánh đã phủ trên tổng', 'Tỉ lệ nhánh')
 $r = @(
-    @('Toàn dự án', '66', '789 trên 1.269', '62,2 phần trăm', '124 trên 214', '57,9 phần trăm'),
-    @('Gói dịch vụ service.impl', '18', '689 trên 872', '79,0 phần trăm', '122 trên 196', '62,2 phần trăm'),
-    @('11 lớp nghiệp vụ đã có kiểm thử', '11', '689 trên 722', '95,4 phần trăm', '122 trên 180', '67,8 phần trăm'),
-    @('11 lớp nghiệp vụ cùng 2 lớp bảo mật', '13', '741 trên 778', '95,2 phần trăm', 'Không tính', 'Không tính')
+    @('Toàn dự án', '66', '976 trên 1.298', '75,2 phần trăm', '147 trên 222', '66,2 phần trăm'),
+    @('Gói dịch vụ service.impl', '18', '816 trên 893', '91,4 phần trăm', '145 trên 204', '71,1 phần trăm'),
+    @('12 lớp nghiệp vụ đã có kiểm thử', '12', '796 trên 814', '97,8 phần trăm', '145 trên 200', '72,5 phần trăm'),
+    @('12 lớp nghiệp vụ cùng 2 lớp bảo mật', '14', '849 trên 871', '97,5 phần trăm', 'Không tính', 'Không tính')
 )
 Add-Table $h $r @(4.6, 1.5, 3.2, 2.3, 3.0, 1.9)
-D 'Ngoài dòng và nhánh, độ bao phủ chỉ dẫn trên toàn dự án là 3.558 trên 5.796, đạt 61,4 phần trăm; độ bao phủ phương thức là 125 trên 300, đạt 41,7 phần trăm. Chỉ số phương thức thấp vì phần lớn phương thức chưa được kiểm thử nằm ở các lớp thực thể và lớp điều khiển.'
+D 'Ngoài dòng và nhánh, độ bao phủ chỉ dẫn trên toàn dự án là 4.374 trên 5.821, đạt 75,1 phần trăm; độ bao phủ phương thức là 180 trên 309, đạt 58,3 phần trăm. Chỉ số phương thức thấp hơn vì phần lớn phương thức chưa được kiểm thử nằm ở các lớp thực thể và lớp điều khiển.'
 T 'Bảng chi tiết theo từng lớp đã có kiểm thử như sau.'
 $h = @('Lớp nghiệp vụ', 'Dòng đã phủ trên tổng', 'Tỉ lệ dòng', 'Nhánh đã phủ trên tổng', 'Tỉ lệ nhánh')
 $r = @(
+    @('WalletServiceImpl', '71 trên 71', '100 phần trăm', '12 trên 12', '100 phần trăm'),
     @('PaymentServiceImpl', '28 trên 28', '100 phần trăm', '8 trên 8', '100 phần trăm'),
     @('PricingServiceImpl', '19 trên 19', '100 phần trăm', '4 trên 4', '100 phần trăm'),
-    @('DistanceServiceImpl', '13 trên 13', '100 phần trăm', 'Không có nhánh', 'Không tính'),
+    @('DistanceServiceImpl', '12 trên 12', '100 phần trăm', 'Không có nhánh', 'Không tính'),
     @('NotificationServiceImpl', '41 trên 41', '100 phần trăm', 'Không có nhánh', 'Không tính'),
     @('AdminServiceImpl', '49 trên 49', '100 phần trăm', '5 trên 6', '83,3 phần trăm'),
-    @('DriverServiceImpl', '41 trên 41', '100 phần trăm', '9 trên 10', '90,0 phần trăm'),
+    @('DriverServiceImpl', '56 trên 56', '100 phần trăm', '9 trên 10', '90,0 phần trăm'),
+    @('VoucherServiceImpl', '37 trên 37', '100 phần trăm', '19 trên 20', '95,0 phần trăm'),
+    @('CustomUserDetailsService', '10 trên 10', '100 phần trăm', '2 trên 2', '100 phần trăm'),
+    @('AuthServiceImpl', '155 trên 155', '100 phần trăm', '25 trên 32', '78,1 phần trăm'),
     @('CustomerServiceImpl', '98 trên 102', '96,1 phần trăm', '21 trên 30', '70,0 phần trăm'),
-    @('OrderServiceImpl', '188 trên 196', '95,9 phần trăm', '30 trên 58', '51,7 phần trăm'),
-    @('VoucherServiceImpl', '30 trên 32', '93,8 phần trăm', '17 trên 18', '94,4 phần trăm'),
-    @('ReviewServiceImpl', '43 trên 46', '93,5 phần trăm', '12 trên 14', '85,7 phần trăm'),
-    @('AuthServiceImpl', '139 trên 155', '89,7 phần trăm', '16 trên 32', '50,0 phần trăm'),
-    @('JwtTokenProvider', '42 trên 46', '91,3 phần trăm', 'Không có nhánh', 'Không tính'),
-    @('CustomUserDetailsService', '10 trên 10', '100 phần trăm', '2 trên 2', '100 phần trăm')
+    @('OrderServiceImpl', '188 trên 199', '94,5 phần trăm', '30 trên 64', '46,9 phần trăm'),
+    @('ReviewServiceImpl', '42 trên 45', '93,3 phần trăm', '12 trên 14', '85,7 phần trăm'),
+    @('JwtTokenProvider', '43 trên 47', '91,5 phần trăm', 'Không có nhánh', 'Không tính')
 )
 Add-Table $h $r @(4.2, 3.2, 2.6, 3.2, 2.8)
-T 'Các lớp nghiệp vụ còn ở mức 0 phần trăm được liệt kê dưới đây; đây là khoảng trống cần bổ sung kiểm thử.'
-$h = @('Lớp nghiệp vụ chưa có kiểm thử', 'Dòng đã phủ trên tổng', 'Nhánh đã phủ trên tổng')
+T 'Các lớp nghiệp vụ chưa có lớp kiểm thử riêng được liệt kê dưới đây; chúng chỉ được chạm tới gián tiếp qua hai lớp đối chứng trong gói demo nên độ bao phủ còn thấp, đây là khoảng trống cần bổ sung kiểm thử.'
+$h = @('Lớp nghiệp vụ chưa có kiểm thử riêng', 'Dòng đã phủ trên tổng', 'Nhánh đã phủ trên tổng')
 $r = @(
-    @('WalletServiceImpl', '0 trên 71', '0 trên 12'),
-    @('AuditLogServiceImpl', '0 trên 31', 'Không có nhánh'),
-    @('OTPServiceImpl', '0 trên 23', '0 trên 4'),
-    @('EmailServiceImpl', '0 trên 8', 'Không có nhánh'),
-    @('FileStorageServiceImpl', '0 trên 7', 'Không có nhánh'),
-    @('MapServiceImpl', '0 trên 6', 'Không có nhánh'),
-    @('SMSServiceImpl', '0 trên 4', 'Không có nhánh')
+    @('AuditLogServiceImpl', '11 trên 31', 'Không có nhánh'),
+    @('OTPServiceImpl', '1 trên 23', '0 trên 4'),
+    @('EmailServiceImpl', '2 trên 8', 'Không có nhánh'),
+    @('FileStorageServiceImpl', '2 trên 7', 'Không có nhánh'),
+    @('MapServiceImpl', '2 trên 6', 'Không có nhánh'),
+    @('SMSServiceImpl', '2 trên 4', 'Không có nhánh')
 )
 Add-Table $h $r @(6.5, 5.0, 5.0)
+D 'So với lần đo trước, lớp WalletServiceImpl đã có lớp kiểm thử riêng và đạt 100 phần trăm dòng cùng 100 phần trăm nhánh nên không còn nằm trong danh sách này.'
 
 H '4.4. Đánh giá tiêu chí độ bao phủ' 2
 $h = @('Mã', 'Ngưỡng', 'Kết quả đo', 'Kết luận')
 $r = @(
-    @('BP-1', 'Từ 90 phần trăm dòng cho từng lớp nghiệp vụ', '10 trong 11 lớp đạt từ 91,3 tới 100 phần trăm; lớp xác thực đạt 89,7 phần trăm', 'Gần đạt, còn 1 lớp sát dưới ngưỡng'),
-    @('BP-2', 'Từ 85 phần trăm nhánh cho lớp có nhánh', 'Đạt ở thanh toán, tính giá, tài xế, mã giảm giá và đánh giá; chưa đạt ở đơn hàng 51,7 phần trăm, xác thực 50,0 phần trăm, khách hàng 70,0 phần trăm và quản trị 83,3 phần trăm', 'Chưa đạt'),
-    @('BP-3', 'Từ 95 phần trăm dòng cho 11 lớp nghiệp vụ', '95,4 phần trăm', 'Đạt'),
-    @('BP-4', 'Từ 60 phần trăm dòng cho toàn dự án', '62,2 phần trăm', 'Đạt'),
-    @('BP-5', 'Không còn lớp nghiệp vụ ở mức 0 phần trăm', 'Còn 7 lớp, trong đó 3 lớp nghiệp vụ chính là ví, ghi nhật ký kiểm toán và mã xác thực', 'Chưa đạt')
+    @('BP-1', 'Từ 90 phần trăm dòng cho từng lớp nghiệp vụ', 'Cả 12 lớp đạt từ 93,3 tới 100 phần trăm', 'Đạt'),
+    @('BP-2', 'Từ 85 phần trăm nhánh cho lớp có nhánh', 'Đạt ở ví, thanh toán, tính giá, tài xế, mã giảm giá và đánh giá; chưa đạt ở đơn hàng 46,9 phần trăm, xác thực 78,1 phần trăm, khách hàng 70,0 phần trăm và quản trị 83,3 phần trăm', 'Chưa đạt'),
+    @('BP-3', 'Từ 95 phần trăm dòng cho 12 lớp nghiệp vụ', '97,8 phần trăm', 'Đạt'),
+    @('BP-4', 'Từ 60 phần trăm dòng cho toàn dự án', '75,2 phần trăm', 'Đạt'),
+    @('BP-5', 'Không còn lớp nghiệp vụ ở mức 0 phần trăm', 'Không còn lớp nào ở mức 0 phần trăm: ví đã có kiểm thử riêng; hai lớp nghiệp vụ chính còn độ bao phủ thấp là ghi nhật ký kiểm toán 11 trên 31 dòng và mã xác thực 1 trên 23 dòng', 'Đạt một phần')
 )
 Add-Table $h $r @(1.5, 4.4, 6.3, 4.3)
-T 'Cần lưu ý khi diễn giải con số 62,2 phần trăm dòng của toàn dự án: chỉ số này bị kéo xuống bởi các lớp nằm ngoài phạm vi kiểm thử đơn vị như lớp điều khiển giao diện, lớp thực thể và lớp cấu hình. Tầng nghiệp vụ là đối tượng của kỹ thuật giả lập đạt 95,4 phần trăm dòng cho 11 lớp đã có kiểm thử. Khoảng trống còn lại tập trung đúng vào 3 lớp chưa viết kiểm thử là ví, ghi nhật ký kiểm toán, mã xác thực cùng các nhánh điều khiển của nhóm đơn hàng, xác thực và khách hàng.'
+T 'Cần lưu ý khi diễn giải con số 75,2 phần trăm dòng của toàn dự án: chỉ số này bị kéo xuống bởi các lớp nằm ngoài phạm vi kiểm thử đơn vị như lớp điều khiển giao diện, lớp thực thể và lớp cấu hình. Tầng nghiệp vụ là đối tượng của kỹ thuật giả lập đạt 97,8 phần trăm dòng cho 12 lớp đã có kiểm thử. Khoảng trống còn lại tập trung vào 2 lớp chưa viết kiểm thử riêng là ghi nhật ký kiểm toán và mã xác thực, cùng các nhánh điều khiển của nhóm đơn hàng, xác thực và khách hàng.'
 # ================= MUC 5: TINH DOC LAP =================
 H '5. Tiêu chí đo lường thứ ba: tính độc lập của kiểm thử' 1
 H '5.1. Định nghĩa và các chỉ báo kiểm chứng' 2
@@ -658,14 +700,14 @@ Add-Table $h $r @(1.6, 5.4, 9.5)
 H '5.2. Kết quả kiểm chứng tính độc lập' 2
 $h = @('Chỉ báo', 'Phép kiểm chứng đã thực hiện', 'Kết quả')
 $r = @(
-    @('ĐL-1', 'Quét toàn bộ tệp trong thư mục src/test ngoài thư mục demo tìm các chú thích SpringBootTest, DataJpaTest, WebMvcTest và AutoConfigureMockMvc', 'Không có kết quả nào. 10 trong 14 lớp kiểm thử đơn vị dùng chú thích ExtendWith với MockitoExtension; chỉ lớp đối chứng trong thư mục demo mới dùng SpringBootTest'),
-    @('ĐL-2', 'Tìm chuỗi HikariPool và jdbc:mysql trong nhật ký của lần chạy 158 lượt và lần chạy 163 lượt', 'Không có kết quả nào, nghĩa là bộ kiểm thử không mở kết nối cơ sở dữ liệu dù dịch vụ MySQL80 đang chạy'),
+    @('ĐL-1', 'Quét toàn bộ tệp trong thư mục src/test ngoài thư mục demo tìm các chú thích SpringBootTest, DataJpaTest, WebMvcTest và AutoConfigureMockMvc', 'Không có kết quả nào. 11 trong 15 lớp kiểm thử đơn vị dùng chú thích ExtendWith với MockitoExtension; chỉ lớp đối chứng trong thư mục demo mới dùng SpringBootTest'),
+    @('ĐL-2', 'Tìm chuỗi HikariPool và jdbc:mysql trong nhật ký của lần chạy 189 lượt và lần chạy 194 lượt', 'Không có kết quả nào, nghĩa là bộ kiểm thử không mở kết nối cơ sở dữ liệu dù dịch vụ MySQL80 đang chạy'),
     @('ĐL-3', 'Kiểm tra khai báo đối tượng giả lập của các lớp gửi thư, gửi tin nhắn, bản đồ, thanh toán và mã xác thực', 'Các lớp này đều được khai báo bằng Mock trong các lớp kiểm thử; nhật ký chạy chỉ có nội dung giả lập do mã nguồn in ra'),
-    @('ĐL-4', 'Kiểm tra cấu trúc mã nguồn kiểm thử và lỗi khi chạy', '13 tệp có phương thức dựng dữ liệu bằng BeforeEach; mọi lần chạy đều không xuất hiện lỗi UnnecessaryStubbing do cơ chế kiểm tra chặt chẽ của Mockito'),
-    @('ĐL-5a', 'Chạy riêng lớp kiểm thử xác thực bằng lệnh mvn với tham số lọc lớp và bỏ qua bước đo độ bao phủ', '22 trên 22 lượt đạt, BUILD SUCCESS, thời gian toàn lệnh 4,916 giây; nhật ký tại bang_chung_so_lieu/run_le_1_lop_kiem_thu.log'),
-    @('ĐL-5b', 'Chạy riêng một phương thức kiểm thử đăng ký thành công', '1 trên 1 lượt đạt, BUILD SUCCESS, thời gian toàn lệnh 5,366 giây; nhật ký tại bang_chung_so_lieu/run_le_1_phuong_thuc.log'),
-    @('ĐL-5c', 'Chạy lại toàn bộ 158 lượt với thứ tự phương thức ngẫu nhiên', '158 trên 158 lượt đạt, BUILD SUCCESS, thời gian toàn lệnh 7,338 giây; nhật ký tại bang_chung_so_lieu/run_thu_tu_ngau_nhien.log'),
-    @('ĐL-6', 'Chạy lại bộ kiểm thử nhiều lần trong cùng buổi đo với các cấu hình khác nhau', 'Mọi lần đều đạt 158 trên 158 lượt và không có lượt nào chập chờn; kết quả độ bao phủ giữ nguyên giữa các lần chạy, ví dụ nhóm thanh toán luôn đạt 28 trên 28 dòng và nhóm xác thực luôn đạt 139 trên 155 dòng')
+    @('ĐL-4', 'Kiểm tra cấu trúc mã nguồn kiểm thử và lỗi khi chạy', '14 tệp có phương thức dựng dữ liệu bằng BeforeEach; mọi lần chạy đều không xuất hiện lỗi UnnecessaryStubbing do cơ chế kiểm tra chặt chẽ của Mockito'),
+    @('ĐL-5a', 'Chạy riêng lớp kiểm thử xác thực bằng lệnh mvn với tham số lọc lớp và bỏ qua bước đo độ bao phủ', '26 trên 26 lượt đạt, BUILD SUCCESS, thời gian toàn lệnh 17,099 giây; nhật ký tại bang_chung_so_lieu/run_le_auth_189.log'),
+    @('ĐL-5b', 'Chạy riêng một phương thức kiểm thử đăng ký thành công', '1 trên 1 lượt đạt, BUILD SUCCESS, thời gian toàn lệnh 14,302 giây; nhật ký tại bang_chung_so_lieu/run_le_1method_189.log'),
+    @('ĐL-5c', 'Chạy lại toàn bộ 189 lượt với thứ tự phương thức ngẫu nhiên', '189 trên 189 lượt đạt, BUILD SUCCESS, thời gian toàn lệnh 20,554 giây; nhật ký tại bang_chung_so_lieu/run_thu_tu_ngau_nhien_189.log'),
+    @('ĐL-6', 'Chạy lại bộ kiểm thử nhiều lần trong cùng buổi đo với các cấu hình khác nhau', 'Mọi lần đều đạt 189 trên 189 lượt và không có lượt nào chập chờn; kết quả độ bao phủ giữ nguyên giữa các lần chạy, ví dụ nhóm thanh toán luôn đạt 28 trên 28 dòng và nhóm xác thực luôn đạt 155 trên 155 dòng')
 )
 Add-Table $h $r @(1.6, 6.4, 8.5)
 
@@ -674,14 +716,14 @@ D 'Cả 6 chỉ báo từ ĐL-1 tới ĐL-6 đều đạt, trong đó chỉ báo
 D 'Kết quả này cho thấy bộ kiểm thử không phụ thuộc vào cơ sở dữ liệu, không phụ thuộc vào dịch vụ gửi thư hay cổng thanh toán và không phụ thuộc thứ tự chạy, vì vậy có thể chạy trên máy trạm hoặc trên máy chủ tích hợp liên tục mà không cần chuẩn bị hạ tầng.'
 # ================= MUC 6: KET LUAN =================
 H '6. Kết luận và hạn chế' 1
-D 'Bộ kiểm thử đơn vị gồm 14 lớp với 151 phương thức, chạy thành 158 lượt, đã thiết kế và hiện thực đủ ba loại đường dẫn: 95 lượt đường dẫn thuận lợi chiếm 60,1 phần trăm, 18 lượt trường hợp biên chiếm 11,4 phần trăm và 45 lượt đường dẫn ngoại lệ chiếm 28,5 phần trăm.'
-D 'Tiêu chí thời gian chạy đạt cả 4 ngưỡng đề ra: tổng thời gian tầng kiểm thử của 158 lượt là 10,238 giây, trung bình 64,8 mili giây mỗi lượt, lớp lâu nhất 4,844 giây và mọi lần chạy đều cho cùng kết quả. Đối chứng cho thấy cùng một luồng đăng nhập, cách có dùng kỹ thuật giả lập tốn 356,77 micro giây cho mỗi lần, còn cách dùng Spring context cùng cơ sở dữ liệu H2 tốn 79,70 mili giây cho mỗi lần và cần 19.438 mili giây chỉ để khởi động nền tảng.'
-D 'Tiêu chí độ bao phủ đạt 3 trong 5 ngưỡng: đạt ở mức tổng hợp 95,4 phần trăm dòng cho 11 lớp nghiệp vụ, 62,2 phần trăm dòng cho toàn dự án và mức 100 phần trăm dòng ở 6 lớp nghiệp vụ. Hai ngưỡng chưa đạt là độ bao phủ nhánh từ 85 phần trăm trở lên cho từng lớp có nhánh và yêu cầu không còn lớp nghiệp vụ ở mức 0 phần trăm.'
+D 'Bộ kiểm thử đơn vị gồm 15 lớp với 182 phương thức, chạy thành 189 lượt, đã thiết kế và hiện thực đủ ba loại đường dẫn: 105 lượt đường dẫn thuận lợi chiếm 55,6 phần trăm, 21 lượt trường hợp biên chiếm 11,1 phần trăm và 63 lượt đường dẫn ngoại lệ chiếm 33,3 phần trăm.'
+D 'Tiêu chí thời gian chạy đạt cả 4 ngưỡng đề ra: tổng thời gian tầng kiểm thử của 189 lượt là 4,721 giây, trung bình 25,0 mili giây mỗi lượt, lớp lâu nhất 0,901 giây và mọi lần chạy đều cho cùng kết quả. Đối chứng cho thấy cùng một luồng đăng nhập, cách có dùng kỹ thuật giả lập tốn 693,06 micro giây cho mỗi lần, còn cách dùng Spring context cùng cơ sở dữ liệu H2 tốn 270,60 mili giây cho mỗi lần và cần 39.654 mili giây chỉ để khởi động nền tảng.'
+D 'Tiêu chí độ bao phủ đạt 4 trong 5 ngưỡng: đạt ở mức 100 phần trăm dòng ở 9 trong 12 lớp nghiệp vụ (cả 12 lớp đều đạt từ 93,3 phần trăm trở lên), 97,8 phần trăm dòng cho 12 lớp nghiệp vụ và 75,2 phần trăm dòng cho toàn dự án; ngưỡng không còn lớp nghiệp vụ ở mức 0 phần trăm đạt một phần vì không còn lớp 0 phần trăm nhưng hai lớp ghi nhật ký kiểm toán và mã xác thực vẫn còn độ bao phủ thấp. Ngưỡng chưa đạt là độ bao phủ nhánh từ 85 phần trăm trở lên cho từng lớp có nhánh.'
 D 'Tiêu chí tính độc lập đạt cả 6 chỉ báo: không có lớp kiểm thử đơn vị nào nạp Spring context, không có kết nối cơ sở dữ liệu trong nhật ký chạy, không phụ thuộc dịch vụ bên ngoài, không chia sẻ trạng thái giữa các test case, kết quả không đổi khi chạy riêng lẻ hoặc chạy với thứ tự ngẫu nhiên và không có lượt kiểm thử chập chờn.'
-D 'Hạn chế thứ nhất là bốn nhóm chức năng chưa đạt ngưỡng độ bao phủ nhánh gồm đơn hàng 51,7 phần trăm, xác thực 50,0 phần trăm, khách hàng 70,0 phần trăm và quản trị 83,3 phần trăm. Hướng khắc phục là bổ sung test case đi vào các nhánh chưa được thực thi, phần thiết kế bổ sung đã có trong tài liệu BAO_CAO_THIET_KE_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md tại mục 3.14.'
-D 'Hạn chế thứ hai là ba lớp nghiệp vụ chưa có kiểm thử gồm WalletServiceImpl, AuditLogServiceImpl và OTPServiceImpl đang ở mức 0 phần trăm, tương ứng 125 dòng mã chưa được kiểm chứng; ma trận kiểm thử cho ba lớp này cũng đã được thiết kế sẵn trong mục 3.14 của tài liệu nêu trên.'
-D 'Hạn chế thứ ba là đường dẫn biên chỉ chiếm 11,4 phần trăm và tập trung ở các lớp thuần logic; các nhóm quản lý đơn hàng, khách hàng và tài xế cần được bổ sung thêm test case biên để cân bằng ma trận kiểm thử.'
-D 'Toàn bộ số liệu trong báo cáo này đều đọc từ các lần chạy thật, với nguồn dẫn chứng là các nhật ký trong thư mục bang_chung_so_lieu cùng tệp độ bao phủ jacoco_158_luot.csv; báo cáo không sử dụng số liệu ước lượng hay số liệu tự đặt ra.'
+D 'Hạn chế thứ nhất là bốn nhóm chức năng chưa đạt ngưỡng độ bao phủ nhánh gồm đơn hàng 46,9 phần trăm, xác thực 78,1 phần trăm, khách hàng 70,0 phần trăm và quản trị 83,3 phần trăm. Hướng khắc phục là bổ sung test case đi vào các nhánh chưa được thực thi, phần thiết kế bổ sung đã có trong tài liệu BAO_CAO_THIET_KE_TEST_CASE_VA_TIEU_CHI_DO_LUONG.md tại mục 3.15.'
+D 'Hạn chế thứ hai là hai lớp nghiệp vụ chưa có kiểm thử riêng gồm AuditLogServiceImpl và OTPServiceImpl còn ở mức bao phủ thấp, tương ứng 42 dòng mã chưa được kiểm chứng; ma trận kiểm thử bổ sung cho các lớp này đã được thiết kế sẵn trong mục 3.15 của tài liệu nêu trên.'
+D 'Hạn chế thứ ba là đường dẫn biên chỉ chiếm 11,1 phần trăm và tập trung ở các lớp thuần logic; các nhóm quản lý đơn hàng, khách hàng và tài xế cần được bổ sung thêm test case biên để cân bằng ma trận kiểm thử.'
+D 'Toàn bộ số liệu trong báo cáo này đều đọc từ các lần chạy thật, với nguồn dẫn chứng là các nhật ký trong thư mục bang_chung_so_lieu cùng tệp độ bao phủ jacoco_do_bao_phu_194.csv; báo cáo không sử dụng số liệu ước lượng hay số liệu tự đặt ra.'
 
 # ================= LUU TEP =================
 $doc.SaveAs2($outPath, 16)

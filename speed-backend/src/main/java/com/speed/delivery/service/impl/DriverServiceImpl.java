@@ -1,5 +1,6 @@
 package com.speed.delivery.service.impl;
 
+import com.speed.delivery.dto.response.DriverResponse;
 import com.speed.delivery.dto.response.OrderResponse;
 import com.speed.delivery.entity.Driver;
 import com.speed.delivery.entity.Order;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * DriverService implementation.
@@ -110,9 +112,41 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<OrderResponse> getAvailableOrders(Long driverId) {
+        // Xác thực driver tồn tại rồi delegate sang OrderService lấy đơn PENDING/CONFIRMED
+        driverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver", "id", driverId));
+        return orderService.getAvailableOrders();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public BigDecimal getEarnings(Long driverId) {
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new ResourceNotFoundException("Driver", "id", driverId));
         return driver.getTotalEarnings();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DriverResponse getDriverProfile(Long driverId) {
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver", "id", driverId));
+
+        return DriverResponse.builder()
+                .id(driver.getId())
+                .userId(driver.getUser().getId())
+                .fullName(driver.getUser().getFullName())
+                .phone(driver.getUser().getPhone())
+                .email(driver.getUser().getEmail())
+                .avatarUrl(driver.getUser().getAvatarUrl())
+                .licensePlate(driver.getLicensePlate())
+                .vehicleType(driver.getVehicleType())
+                .status(driver.getStatus().name())
+                .isAvailable(driver.getIsAvailable())
+                .rating(driver.getRating())
+                .totalDeliveries(driver.getTotalDeliveries())
+                .totalEarnings(driver.getTotalEarnings())
+                .build();
     }
 }

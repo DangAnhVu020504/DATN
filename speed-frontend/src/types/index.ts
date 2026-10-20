@@ -88,6 +88,14 @@ export interface OrderResponse {
   deliveredAt: string | null;
 }
 
+export interface OrderHistoryResponse {
+  id: number;
+  status: string;
+  note: string | null;
+  changedBy: number | null;
+  createdAt: string;
+}
+
 export interface DashboardResponse {
   totalOrders: number;
   totalCustomers: number;
@@ -231,4 +239,21 @@ export interface UpdateProfileRequest {
   fullName?: string;
   phone?: string;
   avatarUrl?: string;
+}
+
+// Driver profile
+export interface DriverProfileResponse {
+  id: number;
+  userId: number;
+  fullName: string;
+  phone: string | null;
+  email: string;
+  avatarUrl: string | null;
+  licensePlate: string | null;
+  vehicleType: string | null;
+  status: string;
+  isAvailable: boolean;
+  rating: number;
+  totalDeliveries: number;
+  totalEarnings: number;
 }

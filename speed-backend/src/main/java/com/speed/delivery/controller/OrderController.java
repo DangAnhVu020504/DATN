@@ -2,7 +2,9 @@ package com.speed.delivery.controller;
 
 import com.speed.delivery.dto.request.CreateOrderRequest;
 import com.speed.delivery.dto.response.ApiResponse;
+import com.speed.delivery.dto.response.OrderHistoryResponse;
 import com.speed.delivery.dto.response.OrderResponse;
+import com.speed.delivery.service.AuthService;
 import com.speed.delivery.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final AuthService authService;
 
     @PostMapping
     @Operation(summary = "Tạo đơn hàng mới")
@@ -36,6 +41,12 @@ public class OrderController {
     @Operation(summary = "Lấy thông tin đơn hàng theo ID")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(orderService.getOrderById(id)));
+    }
+
+    @GetMapping("/{id}/history")
+    @Operation(summary = "Lịch sử thay đổi trạng thái đơn hàng")
+    public ResponseEntity<ApiResponse<List<OrderHistoryResponse>>> getOrderHistory(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getOrderHistory(id)));
     }
 
     @GetMapping("/code/{orderCode}")
@@ -55,14 +66,15 @@ public class OrderController {
     @Operation(summary = "Cập nhật trạng thái đơn hàng")
     public ResponseEntity<ApiResponse<OrderResponse>> updateStatus(
             @PathVariable Long id, @RequestParam String status, Authentication auth) {
-        // Simplified: using 0L as changedBy placeholder
-        return ResponseEntity.ok(ApiResponse.success(orderService.updateOrderStatus(id, status, 0L)));
+        Long changedBy = authService.getProfile(auth.getName()).getId();
+        return ResponseEntity.ok(ApiResponse.success(orderService.updateOrderStatus(id, status, changedBy)));
     }
 
     @PutMapping("/{id}/cancel")
     @Operation(summary = "Hủy đơn hàng")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
             @PathVariable Long id, @RequestParam String reason, Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.success(orderService.cancelOrder(id, reason, 0L)));
+        Long cancelledBy = authService.getProfile(auth.getName()).getId();
+        return ResponseEntity.ok(ApiResponse.success(orderService.cancelOrder(id, reason, cancelledBy)));
     }
 }

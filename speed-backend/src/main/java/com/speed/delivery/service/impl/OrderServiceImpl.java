@@ -1,6 +1,7 @@
 package com.speed.delivery.service.impl;
 
 import com.speed.delivery.dto.request.CreateOrderRequest;
+import com.speed.delivery.dto.response.OrderHistoryResponse;
 import com.speed.delivery.dto.response.OrderResponse;
 import com.speed.delivery.entity.*;
 import com.speed.delivery.enums.*;
@@ -16,7 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * OrderService implementation - Trung tâm nghiệp vụ hệ thống.
@@ -44,6 +48,7 @@ public class OrderServiceImpl implements OrderService {
     private final VoucherService voucherService;
     private final DistanceService distanceService;
     private final AuditLogService auditLogService;
+    private final WalletService walletService;
 
     @Override
     @Transactional
@@ -175,6 +180,35 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getAllOrders(String status, Pageable pageable) {
+        if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
+            return orderRepository.findByStatus(OrderStatus.valueOf(status.toUpperCase()), pageable)
+                    .map(this::mapToResponse);
+        }
+        return orderRepository.findAll(pageable).map(this::mapToResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getAvailableOrders() {
+        // Đơn mới cho tài xế nhận: PENDING hoặc CONFIRMED (chưa được gán)
+        List<Order> available = new ArrayList<>(orderRepository.findByStatus(OrderStatus.PENDING));
+        available.addAll(orderRepository.findByStatus(OrderStatus.CONFIRMED));
+        return available.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderHistoryResponse> getOrderHistory(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+        return orderHistoryRepository.findByOrderIdOrderByCreatedAtDesc(order.getId()).stream()
+                .map(this::mapHistoryToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public OrderResponse assignDriver(Long orderId, Long driverId) {
         log.info("Assigning driver {} to order {}", driverId, orderId);
@@ -243,6 +277,9 @@ public class OrderServiceImpl implements OrderService {
                 driver.setStatus(DriverStatus.ONLINE);
                 driver.setIsAvailable(true);
                 driverRepository.save(driver);
+
+                // Cộng thu nhập vào ví tài xế
+                walletService.addEarning(driver.getId(), order.getId(), order.getDriverEarning());
             }
         }
 
@@ -357,5 +394,15 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return builder.build();
+    }
+
+    private OrderHistoryResponse mapHistoryToResponse(OrderHistory history) {
+        return OrderHistoryResponse.builder()
+                .id(history.getId())
+                .status(history.getStatus().name())
+                .note(history.getNote())
+                .changedBy(history.getChangedBy())
+                .createdAt(history.getCreatedAt() != null ? history.getCreatedAt().toString() : null)
+                .build();
     }
 }

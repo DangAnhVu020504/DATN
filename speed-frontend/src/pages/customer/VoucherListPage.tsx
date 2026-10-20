@@ -23,7 +23,11 @@ export default function VoucherListPage() {
     if (!code.trim()) return;
     setChecking(true);
     try {
-      const res = await voucherService.validateVoucher(code.trim(), 0);
+      // Nếu mã trùng voucher trong danh sách, dùng minOrderValue của chính nó
+      // (tránh báo "không hợp lệ" sai khi voucher có điều kiện đơn tối thiểu)
+      const listed = vouchers.find((v) => v.code === code.trim());
+      const orderValue = listed ? listed.minOrderValue ?? 0 : 0;
+      const res = await voucherService.validateVoucher(code.trim(), orderValue);
       const v = res.data.data;
       setResult({ ok: true, msg: `Hợp lệ! ${v.description || 'Voucher ' + v.code}` });
     } catch (e: any) {

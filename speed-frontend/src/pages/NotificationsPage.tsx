@@ -1,33 +1,63 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/redux/store';
+import { notificationService } from '@/services/notificationService';
+import type { NotificationResponse } from '@/types';
 
-interface Notif {
-  id: number;
-  icon: string;
-  color: string;
-  title: string;
-  body: string;
-  time: string;
-  unread: boolean;
+const TYPE_META: Record<string, { icon: string; color: string }> = {
+  ORDER: { icon: '📦', color: 'bg-blue-50' },
+  PROMOTION: { icon: '🎟️', color: 'bg-amber-50' },
+  PAYMENT: { icon: '💰', color: 'bg-purple-50' },
+  SYSTEM: { icon: '🔔', color: 'bg-gray-50' },
+  CHAT: { icon: '💬', color: 'bg-green-50' },
+};
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Vừa xong';
+  if (mins < 60) return `${mins} phút trước`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} ngày trước`;
+  return new Date(iso).toLocaleDateString('vi-VN');
 }
 
-const INIT: Notif[] = [
-  { id: 1, icon: '🚗', color: 'bg-green-50', title: 'Tài xế đã nhận đơn SPD-047', body: 'Trần Minh Khoa đang trên đường đến điểm lấy hàng của bạn.', time: '5 phút trước', unread: true },
-  { id: 2, icon: '📦', color: 'bg-blue-50', title: 'Đơn hàng đang được giao', body: 'Đơn SPD-2026-047 hiện đang di chuyển đến điểm giao.', time: '20 phút trước', unread: true },
-  { id: 3, icon: '🎟️', color: 'bg-amber-50', title: 'Voucher mới dành cho bạn', body: 'SPEED20K — Giảm 20K cho mọi đơn hàng. HSD 30/09.', time: '1 giờ trước', unread: false },
-  { id: 4, icon: '✅', color: 'bg-green-50', title: 'Giao hàng thành công', body: 'Đơn SPD-2026-044 đã được giao. Đánh giá tài xế ngay!', time: 'Hôm qua', unread: false },
-  { id: 5, icon: '💰', color: 'bg-purple-50', title: 'Hoàn tiền ví Speed', body: '+15,000₫ đã được hoàn vào ví từ đơn SPD-2026-041.', time: 'Hôm qua', unread: false },
-];
-
 export default function NotificationsPage() {
-  const [items, setItems] = useState<Notif[]>(INIT);
+  const userId = useSelector((s: RootState) => s.auth.user?.userId);
+  const [items, setItems] = useState<NotificationResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
 
-  const unreadCount = items.filter((n) => n.unread).length;
-  const filtered = items.filter((n) => filter === 'ALL' || (filter === 'UNREAD' && n.unread));
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    notificationService
+      .getUserNotifications(userId, 0, 50)
+      .then((res) => { if (!cancelled) setItems(res.data.data ?? []); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [userId]);
 
-  const markAllRead = () => setItems((ns) => ns.map((n) => ({ ...n, unread: false })));
-  const markRead = (id: number) => setItems((ns) => ns.map((n) => (n.id === id ? { ...n, unread: false } : n)));
-  const remove = (id: number) => setItems((ns) => ns.filter((n) => n.id !== id));
+  const unreadCount = items.filter((n) => !n.isRead).length;
+  const filtered = items.filter((n) => filter === 'ALL' || (filter === 'UNREAD' && !n.isRead));
+
+  const markAllRead = async () => {
+    const unread = items.filter((n) => !n.isRead);
+    setItems((ns) => ns.map((n) => ({ ...n, isRead: true })));
+    await Promise.all(unread.map((n) => notificationService.markAsRead(n.id).catch(() => undefined)));
+  };
+
+  const markRead = (id: number) => {
+    setItems((ns) => ns.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+    notificationService.markAsRead(id).catch(() => undefined);
+  };
+
+  const remove = (id: number) => {
+    setItems((ns) => ns.filter((n) => n.id !== id));
+    notificationService.deleteNotification(id).catch(() => undefined);
+  };
 
   return (
     <div className="p-6 max-w-2xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -63,22 +93,30 @@ export default function NotificationsPage() {
 
       {/* List */}
       <div className="space-y-3">
-        {filtered.map((n) => (
+        {loading && (
+          <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+            <div className="w-8 h-8 border-2 border-red-200 border-t-red-500 rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-gray-400 font-medium">Đang tải thông báo...</p>
+          </div>
+        )}
+        {!loading && filtered.map((n) => {
+          const meta = TYPE_META[n.type] ?? TYPE_META.SYSTEM;
+          return (
           <div
             key={n.id}
-            onClick={() => markRead(n.id)}
+            onClick={() => !n.isRead && markRead(n.id)}
             className={`bg-white rounded-2xl p-5 shadow-sm border transition-all duration-200 flex items-start gap-4 cursor-pointer ${
-              n.unread ? 'border-red-100' : 'border-gray-100 opacity-75'
+              !n.isRead ? 'border-red-100' : 'border-gray-100 opacity-75'
             }`}
           >
-            <div className={`w-11 h-11 ${n.color} rounded-xl flex items-center justify-center text-xl shrink-0`}>{n.icon}</div>
+            <div className={`w-11 h-11 ${meta.color} rounded-xl flex items-center justify-center text-xl shrink-0`}>{meta.icon}</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className={`text-sm ${n.unread ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>{n.title}</span>
-                {n.unread && <span className="w-2 h-2 bg-red-500 rounded-full shrink-0" />}
+                <span className={`text-sm ${!n.isRead ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>{n.title}</span>
+                {!n.isRead && <span className="w-2 h-2 bg-red-500 rounded-full shrink-0" />}
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed">{n.body}</p>
-              <span className="text-xs text-gray-300 mt-1 block">{n.time}</span>
+              <p className="text-xs text-gray-500 leading-relaxed">{n.message}</p>
+              <span className="text-xs text-gray-300 mt-1 block">{timeAgo(n.createdAt)}</span>
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); remove(n.id); }}
@@ -88,9 +126,10 @@ export default function NotificationsPage() {
               ✕
             </button>
           </div>
-        ))}
+          );
+        })}
 
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
             <div className="text-5xl mb-3">🔔</div>
             <p className="text-gray-400 font-medium">Không có thông báo nào</p>

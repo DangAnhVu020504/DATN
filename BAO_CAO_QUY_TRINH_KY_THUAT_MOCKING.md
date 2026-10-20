@@ -34,11 +34,11 @@ Trạng thái bộ test tính đến thời điểm báo cáo:
 
 | Chỉ số | Giá trị |
 |---|---|
-| Số lớp test | 14 lớp unit-test thuần Mock + 2 lớp DEMO đối chứng (16 lớp, 163 test) |
-| Tổng số test | **163 — PASS 100% (0 failure, 0 error)** |
-| Thời gian chạy toàn bộ `mvn test` | **37,1 giây** (163 test) — riêng 2 lớp DEMO đối chứng chiếm **27,9 giây**; chạy riêng 158 test thuần Mock chỉ mất **12,7 giây** (xem 4.4) |
-| Code Coverage (JaCoCo) | **67,8% line / 57,9% branch** |
-| Lượng mock đã dùng trong dự án | **45 `@Mock` · 10 `@InjectMocks` · 63 lời gọi kiểm chứng tương tác** |
+| Số lớp test | 15 lớp unit-test thuần Mock + 2 lớp DEMO đối chứng (17 file, 194 lượt) |
+| Tổng số test | **194 — PASS 100% (0 failure, 0 error)** (189 unit + 5 demo) |
+| Thời gian chạy | `mvn clean verify` bộ 194 lượt = **1:44 min** (gồm `jacoco:check`); riêng 189 test unit thuần Mock có tổng thời gian thực thi **≈ 4,7 s** (~25 ms/test) |
+| Code Coverage (JaCoCo) | **75,2% line / 66,2% branch** toàn dự án; **12 lớp nghiệp vụ trọng tâm 97,8% line (9 lớp 100%)**; `jacoco:check` (12 lớp, LINE ≥ 90%) **PASS** |
+| Lượng mock đã dùng trong dự án | **49 `@Mock` · 11 `@InjectMocks` · 188 lời gọi kiểm chứng tương tác** |
 | Class tiêu biểu | `AuthServiceImpl` có **11 dependency** — đều được thay bằng mock |
 
 Điểm mấu chốt: `AuthServiceImpl` gọi `AuthenticationManager`, `UserRepository`, `JwtTokenProvider`, `EmailService`, `OTPService`... — nếu không Mock thì **không thể** test được lớp này một cách độc lập (bắt buộc phải có DB, có Spring Security đầy đủ, có hệ thống email).
@@ -314,15 +314,15 @@ mvn test
 
 ### Kết luận
 
-1. **Quy trình 7 bước** (Phân tích seam → Chọn công cụ → Khởi tạo mock → Thiết kế HP/ED/EX → Kiểm chứng kết quả & tương tác → Chạy & đo lường → Đối chứng) đã được áp dụng đầy đủ trên dự án Speed Delivery với **163 test, 100% PASS**.
-2. **Hiệu quả được chứng minh bằng số đo:** Mock nhanh hơn **~543×**, tiết kiệm **12,2 giây** startup/context mỗi phiên chạy, cho phép kiểm thử các nhánh lỗi "bất khả thi" với hạ tầng thật, và đảm bảo **độc lập tuyệt đối** (random order 158/158, 0 flaky).
+1. **Quy trình 7 bước** (Phân tích seam → Chọn công cụ → Khởi tạo mock → Thiết kế HP/ED/EX → Kiểm chứng kết quả & tương tác → Chạy & đo lường → Đối chứng) đã được áp dụng đầy đủ trên dự án Speed Delivery với **194 lượt test (189 unit + 5 demo), 100% PASS, `mvn clean verify` xanh** (đo lại 18/10/2026).
+2. **Hiệu quả được chứng minh bằng số đo:** Mock nhanh hơn **~390×** mỗi login (dao động 223×–540× giữa các lần đo), tiết kiệm **12–40 giây** startup/context mỗi phiên chạy, cho phép kiểm thử các nhánh lỗi "bất khả thi" với hạ tầng thật, và đảm bảo **độc lập tuyệt đối** (random order 189/189, 0 flaky; full-run 194/194 PASS).
 3. Quá trình dựng thí nghiệm còn **phát hiện 1 lỗi tiềm ẩn** (refresh token trùng khi login 2 lần trong cùng giây) — minh chứng cho giá trị thực tiễn của việc test chủ động dựng tình huống.
 
 ### Hạn chế (trung thực)
 
 - Thí nghiệm đối chứng đo login của `AuthServiceImpl` — kết quả định lượng (**543×, 12,2 s**) cần làm lại nếu đổi môi trường/hardware; **tỷ lệ tương đối** vẫn giữ nguyên xu hướng.
 - Tốc độ có dao động giữa các lần đo (đo thực tế 3 lần: Mock 162,7–288,8 µs/login; thật 87,8–89,5 ms/login; startup context 12,2–19,5 s) → **tỷ lệ vẫn ổn định ở khoảng 400–540×**; số dùng trong báo cáo là lần đo chạy riêng thí nghiệm.
-- Coverage line toàn dự án 67,8% chưa đạt gate 90% (nhánh `Wallet/AuditLog/OTP` chưa có test riêng) — bộ test nền 158 vẫn là nguồn chính.
+- Coverage line toàn dự án 75,2% chưa đạt gate 90% (còn `AuditLog/OTPServiceImpl`, Controller và hạ tầng ngoài phạm vi) — vì vậy gate `jacoco:check` trong `pom.xml` được **thu hẹp còn 12 lớp nghiệp vụ trọng tâm (LINE ≥ 90%)** và hiện **PASS**; `WalletServiceImpl` đã được bổ sung test đạt 100% (trước đây 1,4%).
 - Tốc độ của JIT/JVM có thể thay đổi vài % giữa các lần chạy (số đo ở đây lấy từ lần chạy riêng lẻ thí nghiệm).
 
 ### Cách tái lập số liệu
@@ -333,9 +333,9 @@ cd speed-backend
 # (1) Thí nghiệm đối chứng — số liệu Chương 4
 mvn test -Dtest=MockingDemoTest,SpringContextDemoTest
 
-# (2) Toàn bộ suite — số liệu Chương 2, 5
-mvn test
-#   đọc "Tests run:", "Total time" trong console
+# (2) Toàn bộ suite — số liệu Chương 2, 5 (chuẩn mới nhất: kèm kiểm tra ngưỡng coverage)
+mvn clean verify
+#   đọc "Tests run:", "Total time" trong console; jacoco:check phải PASS
 
 # (3) Thời gian từng lớp
 #   xem target/surefire-reports/TEST-*.xml (thuộc tính time)

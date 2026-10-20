@@ -24,6 +24,7 @@ import AdminOrdersPage from '@/pages/admin/AdminOrdersPage';
 import AdminLogsPage from '@/pages/admin/AdminLogsPage';
 import AdminVouchersPage from '@/pages/admin/AdminVouchersPage';
 import NotificationPage from '@/pages/NotificationsPage';
+import SettingsPage from '@/pages/SettingsPage';
 import MainLayout from '@/components/layout/MainLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
@@ -87,6 +88,7 @@ function App() {
             </ProtectedRoute>
           }>
             <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
           {/* Fallback */}

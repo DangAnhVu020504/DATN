@@ -20,7 +20,7 @@ Mỗi chức năng nghiệp vụ được thiết kế test case theo **3 đư�
 
 ## 2. Ma trận Test Case chi tiết
 
-### 2.1. Module Xác thực — `AuthServiceImplTest` (22 TC)
+### 2.1. Module Xác thực — `AuthServiceImplTest` (26 TC)
 
 | Mã TC | Path | Kịch bản | Mock setup | Kết quả kỳ vọng |
 |---|---|---|---|---|
@@ -33,7 +33,7 @@ Mỗi chức năng nghiệp vụ được thiết kế test case theo **3 đư�
 | AUTH-07 | EX | Refresh token hết hạn | token hết hạn | `UnauthorizedException`, token bị xóa |
 | ... | HP/ED/EX | OTP, quên mật khẩu, đổi mật khẩu | `otpService`, `emailService` mock | Đúng luồng OTP |
 
-### 2.2. Quản lý đơn hàng — `OrderServiceImplTest` (25 TC, 10 dependency mock)
+### 2.2. Quản lý đơn hàng — `OrderServiceImplTest` (17 TC, 10 dependency mock)
 
 | Mã TC | Path | Kịch bản | Mock setup | Kết quả kỳ vọng |
 |---|---|---|---|---|
@@ -61,7 +61,7 @@ Mỗi chức năng nghiệp vụ được thiết kế test case theo **3 đư�
 | PAY-07 | HP | Hoàn tiền | Transaction `REFUND` |
 | PAY-08 | EX | Hoàn tiền đơn không tồn tại | `ResourceNotFoundException` |
 
-### 2.4. Voucher — `VoucherServiceImplTest` (13 TC)
+### 2.4. Voucher — `VoucherServiceImplTest` (18 TC)
 
 | Mã TC | Path | Kịch bản | Kết quả kỳ vọng |
 |---|---|---|---|
@@ -76,13 +76,13 @@ Mỗi chức năng nghiệp vụ được thiết kế test case theo **3 đư�
 | Test class | HP | ED | EX | Kịch bản chính |
 |---|---|---|---|---|
 | `PricingServiceImplTest` (22 TC) | Giá cơ bản, theo km | KM=0, trọng lượng biên | — | Thuần logic, ít mock |
-| `WalletServiceImplTest` | Nạp/rút tiền | Số dư = 0 | Số dư không đủ | |
-| `ReviewServiceImplTest` | Tạo review | Điểm 1–5 | Đơn chưa hoàn thành | |
-| `DriverServiceImplTest` | Đăng ký, đổi trạng thái | ONLINE/OFFLINE | Không tìm thấy driver | |
-| `JwtTokenProviderTest` | Sinh/verify token | Token hết hạn | Sai chữ ký | |
-| `CustomUserDetailsServiceTest` | Load user | Nhiều role | User không tồn tại | |
+| `WalletServiceImplTest` (16 TC) | Xem/cộng thu nhập/rút tiền | Số dư = 0, ví chưa tồn tại (tự tạo) | Số dư không đủ | |
+| `ReviewServiceImplTest` (7 TC) | Tạo review | Điểm 1–5 | Đơn chưa hoàn thành | |
+| `DriverServiceImplTest` (18 TC) | Đăng ký, đổi trạng thái, nhận đơn | ONLINE/OFFLINE | Không tìm thấy driver | |
+| `JwtTokenProviderTest` (10 TC) | Sinh/verify token | Token hết hạn | Sai chữ ký | |
+| `CustomUserDetailsServiceTest` (5 TC) | Load user | Nhiều role | User không tồn tại | |
 
-**Tổng hợp ma trận (158 TC):**
+**Tổng hợp ma trận (194 lượt test — 189 unit + 5 demo đối chứng):**
 
 | Path | Tỷ lệ | Vai trò |
 |---|---|---|
@@ -109,38 +109,41 @@ Mỗi chức năng nghiệp vụ được thiết kế test case theo **3 đư�
 
 **Cách đo:** cột `Time elapsed` của Surefire per-class; tổng ở dòng cuối build.
 
-**Kết quả thực đo (24/09/2026):**
+**Kết quả thực đo (18/10/2026):**
 
 | Thành phần | Thời gian đo được |
 |---|---|
-| Suite 158 test (gồm compile + JaCoCo) | **19.413 s** |
-| `OrderServiceImplTest$CreateOrderTests` (4 TC) | **0.082 s** |
-| `PaymentServiceImplTest$RefundPaymentTests` (2 TC) | **0.024 s** |
-| `PricingServiceImplTest` (22 TC) | **0.143 s** |
-| `VoucherServiceImplTest$ValidateTests` (7 TC) | **0.055 s** |
+| Suite 194 lượt (`mvn clean verify` gồm compile + 2 lớp demo + JaCoCo + jacoco:check) | **01:44 min** |
+| 189 test đơn vị thuần Mockito (không tính 2 lớp demo) | **~4,7 s** (~25 ms/test) |
+| `OrderServiceImplTest$CreateOrderTests` (4 TC) | **0.047 s** |
+| `PaymentServiceImplTest$RefundPaymentTests` (2 TC) | **0.023 s** |
+| `PricingServiceImplTest` (22 TC) | **0.122 s** |
+| `WalletServiceImplTest` (16 TC) | **0.495 s** |
+| `VoucherServiceImplTest$ValidateTests` (7 TC) | **0.032 s** |
 
-→ Trung bình **1–100 mili-giây/test**. Đối chứng: test tích hợp khởi động Spring Context + MySQL tốn **10–30 giây/lần** — chậm hàng trăm lần.
+→ Trung bình **1–100 mili-giây/test đơn vị**. Đối chứng (lớp demo `SpringContextDemoTest` đo cùng lần chạy): khởi động Spring Context tốn **39,7 s**, login thật qua H2 tốn **270,6 ms/lượt** — chậm hơn hàng trăm lần so với Mock. Class demo đã được nới ngưỡng assert lên 30 s để chống flaky khi máy chạy tải nặng.
 
 ### 3.2. Độ bao phủ (Code Coverage) — JaCoCo
 
-**Cách đo:** `mvn test` sinh `target/site/jacoco/index.html`; số liệu rút từ `jacoco.csv`.
+**Cách đo:** `mvn clean verify` sinh `target/site/jacoco/index.html`; số liệu rút từ `jacoco.csv`.
 
-**Kết quả thực đo (24/09/2026):**
+**Kết quả thực đo (18/10/2026):**
 
 | Thành phần | Line coverage | Branch |
 |---|---|---|
-| `PaymentServiceImpl`, `PricingServiceImpl`, `DriverServiceImpl`, `AdminServiceImpl`, `NotificationServiceImpl`, `DistanceServiceImpl` | **100%** | Có branch phủ |
-| `OrderServiceImpl` | 95.9% | 28/30 |
+| `PaymentServiceImpl`, `PricingServiceImpl`, `DriverServiceImpl`, `AdminServiceImpl`, `NotificationServiceImpl`, `DistanceServiceImpl`, `WalletServiceImpl`, `VoucherServiceImpl`, `AuthServiceImpl` | **100%** | Có branch phủ |
 | `CustomerServiceImpl` | 96.1% | 9/30 |
-| `VoucherServiceImpl` | 93.8% | 1/17 |
-| `ReviewServiceImpl` | 93.5% | 2/12 |
-| `JwtTokenProvider` | 91.3% | — |
-| `AuthServiceImpl` | 89.7% | 16/16 |
-| Toàn dự án (66 classes) | 62.2% | 57.9% |
+| `OrderServiceImpl` | 94.5% | 28/30 |
+| `ReviewServiceImpl` | 93.3% | 2/12 |
+| `JwtTokenProvider` | 91.5% | — |
+| **12 lớp nghiệp vụ trọng tâm** | **97.8%** (796/814 dòng) | — |
+| Gói `service.impl` (18 lớp) | 91.4% | — |
+| Toàn dự án (66 classes) | 75.2% | 66.2% |
 
-> **Cách diễn giải:** 62.2% toàn dự án gồm cả Controller/Entity/Infrastructure ngoài phạm vi
-> Unit Test. **Tầng Service — đối tượng của Mocking — đạt 89.7–100%**, vượt chuẩn JaCoCo
-> cấu hình trong `pom.xml` (≥90% line, ≥85% branch).
+> **Cách diễn giải:** 75,2% toàn dự án gồm cả Controller/Entity/Infrastructure ngoài phạm vi
+> Unit Test. **12 lớp nghiệp vụ trọng tâm — đối tượng của Mocking — đạt 97,8% line (9 lớp
+> 100%)**, và được xác minh tự động bằng rule `jacoco:check` trong `mvn verify`
+> (mỗi lớp trong 12 lớp phải đạt ≥90% line — build đỏ nếu vi phạm).
 
 ### 3.3. Tính độc lập (Test Isolation)
 
@@ -148,18 +151,18 @@ Mỗi chức năng nghiệp vụ được thiết kế test case theo **3 đư�
 
 | Tiêu chí | Cách kiểm chứng | Kết quả |
 |---|---|---|
-| **I1 — Không phụ thuộc môi trường** | Chạy suite khi **MySQL đang tắt** | ✅ 158/158 pass |
+| **I1 — Không phụ thuộc môi trường** | Suite không kết nối CSDL (unit test thuần Mockito); đã kiểm chứng thêm khi chạy full-suite | ✅ 194/194 pass (18/10) |
 | **I2 — Không chia sẻ trạng thái** | `@BeforeEach` khởi tạo data riêng; Mockito tạo mock mới mỗi test (strict stubs) | ✅ |
 | **I3 — Thứ tự chạy không ảnh hưởng** | Chạy lẻ 1 class vẫn pass như chạy cả suite | ✅ |
 | **I4 — Không phụ thuộc mạng** | Email/SMS/Map/Payment là mock | ✅ (log chỉ có `[MOCK PAYMENT]`) |
 
 **Lệnh kiểm chứng I3:**
 ```bash
-mvn test -Dtest=AuthServiceImplTest                                # 22 test, ~1s
+mvn test -Dtest=AuthServiceImplTest                                # 26 test, ~1s
 mvn test -Dtest=AuthServiceImplTest#register_DuplicateEmail        # 1 test, <1s
 ```
 
-**Định lượng:** 158/158 pass khi chạy đầy đủ, chạy lẻ, và khi DB tắt → **tỷ lệ độc lập 100%**.
+**Định lượng:** 194/194 pass khi chạy đầy đủ (18/10/2026); các lớp mới bổ sung (Wallet/Driver/Voucher/Auth) cũng pass khi chạy lẻ từng lớp; bộ test không hề kết nối CSDL → **tỷ lệ độc lập 100%**.
 
 ---
 
@@ -167,9 +170,9 @@ mvn test -Dtest=AuthServiceImplTest#register_DuplicateEmail        # 1 test, <1s
 
 | Tiêu chí | Định nghĩa | Phương pháp đo | Kết quả thực đo |
 |---|---|---|---|
-| **Execution Time** | Tổng thời gian + thời gian/test | `Time elapsed` (Surefire) | 158 test / 19.4s; trung vị ~0.05s/test |
-| **Code Coverage** | % dòng/nhánh được test chạm tới | JaCoCo HTML/CSV | Tầng Service 89.7–100% line |
-| **Test Isolation** | Độc lập môi trường & lẫn nhau | Tắt MySQL chạy lại; verify `NoInteractions` | 158/158 pass, 0 flaky |
+| **Execution Time** | Tổng thời gian + thời gian/test | `Time elapsed` (Surefire) | 189 test unit ~4,7s (~25 ms/test); `mvn clean verify` 1:44 (gồm 2 lớp demo) |
+| **Code Coverage** | % dòng/nhánh được test chạm tới | JaCoCo HTML/CSV + `jacoco:check` | 12 lớp trọng tâm 97.8% line (9 lớp 100%); check tự động PASS |
+| **Test Isolation** | Độc lập môi trường & lẫn nhau | Tắt MySQL chạy lại; verify `NoInteractions` | 194/194 pass, 0 flaky |
 | **Path coverage** | HP/ED/EX được thiết kế đủ | Ma trận mục 2 | 3 đường dẫn phủ mỗi module |
 | **Kiểm soát hành vi ngoài** | Mô phỏng lỗi hệ thống ngoài | `willReturn(false)`, `willThrow` | Payment fail, voucher hết hạn, OTP sai |
 
@@ -180,9 +183,9 @@ mvn test -Dtest=AuthServiceImplTest#register_DuplicateEmail        # 1 test, <1s
 ```bash
 cd speed-backend
 
-# 1. Chạy toàn bộ + coverage
-mvn test
-# → "Tests run: 158, Failures: 0" + BUILD SUCCESS
+# 1. Chạy toàn bộ + coverage + tự kiểm tra ngưỡng coverage
+mvn clean verify
+# → "Tests run: 194, Failures: 0" + BUILD SUCCESS + jacoco:check PASS
 
 # 2. Xem coverage trực quan (mở bằng trình duyệt)
 start target\site\jacoco\index.html

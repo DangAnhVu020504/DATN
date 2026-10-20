@@ -17,6 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderCode(String orderCode);
     Page<Order> findByCustomerIdOrderByCreatedAtDesc(Long customerId, Pageable pageable);
     Page<Order> findByDriverIdOrderByCreatedAtDesc(Long driverId, Pageable pageable);
+    Page<Order> findByStatus(OrderStatus status, Pageable pageable);
     List<Order> findByStatus(OrderStatus status);
     long countByStatus(OrderStatus status);
 

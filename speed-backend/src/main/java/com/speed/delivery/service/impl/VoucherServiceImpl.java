@@ -100,4 +100,20 @@ public class VoucherServiceImpl implements VoucherService {
         return voucherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Voucher", "id", id));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Voucher> getAllVouchers() {
+        return voucherRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public Voucher toggleActive(Long id) {
+        Voucher voucher = getVoucherById(id);
+        voucher.setIsActive(!voucher.getIsActive());
+        Voucher saved = voucherRepository.save(voucher);
+        log.info("Voucher {} active set to {}", voucher.getCode(), saved.getIsActive());
+        return saved;
+    }
 }

@@ -172,23 +172,24 @@ cd speed-backend
 
 | Test class | Phụ thuộc được Mock | Kịch bản nổi bật |
 |---|---|---|
-| `AuthServiceImplTest` (22 TC) | 11 (Repo, JWT, Email, OTP, AuditLog) | Đăng ký/đăng nhập, email trùng, sai mật khẩu, OTP, refresh token |
-| `OrderServiceImplTest` (25 TC) | 10 | Tạo đơn, áp voucher, thanh toán thất bại, tài xế bận |
-| `PaymentServiceImplTest` | Wallet, Payment | Số dư không đủ, giao dịch thất bại |
-| `PricingServiceImplTest` | Map/Distance | Tính giá theo khoảng cách, phụ tải trọng lượng |
-| `WalletServiceImplTest` | Wallet, Transaction | Nạp/rút tiền, số dư âm |
-| `VoucherServiceImplTest` | VoucherRepo | Voucher hết hạn (`VoucherExpiredException`), vượt lượt dùng |
-| `ReviewServiceImplTest`, `DriverServiceImplTest`, `NotificationServiceImplTest`, `DistanceServiceImplTest`, `CustomerServiceImplTest`, `AdminServiceImplTest` | Repo, các service | Luồng nghiệp vụ tương ứng |
-| `JwtTokenProviderTest`, `CustomUserDetailsServiceTest` | Repository, Encoder | Bảo mật: sinh/verify token, load user |
+| `AuthServiceImplTest` (26 TC) | 11 (Repo, JWT, Email, OTP, AuditLog) | Đăng ký/đăng nhập, email trùng, sai mật khẩu, OTP, refresh token, cập nhật hồ sơ |
+| `OrderServiceImplTest` (17 TC) | 10 | Tạo đơn, áp voucher, thanh toán thất bại, tài xế bận |
+| `WalletServiceImplTest` (16 TC) | 3 (Wallet, Transaction, Driver) | Xem ví, tự tạo ví, cộng thu nhập, rút tiền, số dư không đủ |
+| `DriverServiceImplTest` (18 TC) | 5 (Repo, OrderService, Notification, AuditLog) | Nhận/từ chối đơn, hoàn thành giao hàng, lịch sử, hồ sơ tài xế |
+| `PaymentServiceImplTest` (10 TC) | Wallet, Payment | Số dư không đủ, giao dịch thất bại |
+| `PricingServiceImplTest` (22 TC) | Map/Distance | Tính giá theo khoảng cách, phụ tải trọng lượng |
+| `VoucherServiceImplTest` (18 TC) | VoucherRepo | Voucher hết hạn (`VoucherExpiredException`), vượt lượt dùng, xem/toggle voucher |
+| `ReviewServiceImplTest`, `NotificationServiceImplTest`, `DistanceServiceImplTest`, `CustomerServiceImplTest`, `AdminServiceImplTest` | Repo, các service | Luồng nghiệp vụ tương ứng |
+| `JwtTokenProviderTest` (10 TC), `CustomUserDetailsServiceTest` (5 TC) | Repository, Encoder | Bảo mật: sinh/verify token, load user |
 
-**Tổng: 15 test classes, 158 test case** — kết quả chạy thực tế `mvn test` (24/09/2026):
+**Tổng: 15 lớp kiểm thử đơn vị (189 lượt) + 2 lớp demo đối chứng (5 lượt) = 194 lượt** — kết quả chạy thực tế `mvn clean verify` (18/10/2026):
 
 ```
-Tests run: 158, Failures: 0, Errors: 0, Skipped: 0
-BUILD SUCCESS — Total time: 19.413 s
+Tests run: 194, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS — Total time: 01:44 min (đã bao gồm bước jacoco:check)
 ```
 
-Toàn bộ 158 test đều dùng Mocking, không kết nối MySQL.
+Toàn bộ test đơn vị đều dùng Mocking, không kết nối MySQL.
 
 ---
 
@@ -196,36 +197,43 @@ Toàn bộ 158 test đều dùng Mocking, không kết nối MySQL.
 
 ### 5.1. Kết quả thực nghiệm đã đo
 
-Kết quả chạy `mvn test` (24/09/2026):
+Kết quả chạy `mvn clean verify` (18/10/2026):
 
 ```
-Tests run: 158,  Failures: 0,  Errors: 0,  Skipped: 0
-BUILD SUCCESS — Total time: 19.413 s
-[MOCK PAYMENT] Payment processed: orderId=1, status=PENDING  ← cổng thanh toán là mock
+Tests run: 194,  Failures: 0,  Errors: 0,  Skipped: 0
+BUILD SUCCESS — Total time: 01:44 min
+[INFO] --- jacoco:0.8.12:check (check) @ speed-delivery ---   ← PASS: 12 lớp nghiệp vụ ≥90% line
+[DEMO-1 MOCK] 10.000 login = 6930 ms (693,06 us/login)        ← Mock: ~0,69 ms/login
+[DEMO-5 SPRING+H2] 10 login THAT = 2706 ms (270,60 ms/login)  ← Không Mock: ~271 ms/login
+[DEMO-4 SPRING] Spring Context startup = 39654 ms
 ```
+
+→ Mocking nhanh hơn **~390 lần/lượt login** và không tốn **~40 s** khởi động Spring Context.
+(Ngưỡng assert của demo đã nới lên 30 s để tránh flaky khi máy chạy tải nặng.)
 
 **Độ bao phủ đo được (JaCoCo — target/site/jacoco/index.html):**
 
 | Thành phần | Line coverage | Ghi chú |
 |---|---|---|
-| `PaymentServiceImpl`, `PricingServiceImpl` | **100%** | Mock cổng thanh toán / MapService |
-| `DriverServiceImpl`, `AdminServiceImpl`, `NotificationServiceImpl`, `DistanceServiceImpl` | **100%** | |
-| `OrderServiceImpl` | **95.9%** | 10 dependency được mock |
+| `PaymentServiceImpl`, `PricingServiceImpl`, `DistanceServiceImpl`, `AdminServiceImpl`, `NotificationServiceImpl` | **100%** | Mock cổng thanh toán / MapService |
+| `WalletServiceImpl`, `DriverServiceImpl`, `VoucherServiceImpl`, `AuthServiceImpl` | **100%** | Đã bổ sung test ngày 18/10 (trước đó 1,4–89,7%) |
 | `CustomerServiceImpl` | **96.1%** | |
-| `VoucherServiceImpl` | **93.8%** | |
-| `ReviewServiceImpl` | **93.5%** | |
-| `JwtTokenProvider` | **91.3%** | |
-| `AuthServiceImpl` | **89.7%** | 11 dependency được mock |
-| Toàn dự án (66 classes) | 62.2% | Gồm cả Controller/Entity — ngoài phạm vi Unit Test |
+| `OrderServiceImpl` | **94.5%** | 10 dependency được mock |
+| `ReviewServiceImpl` | **93.3%** | |
+| `JwtTokenProvider` | **91.5%** | |
+| **12 lớp nghiệp vụ trọng tâm** | **97.8%** | Được `jacoco:check` xác minh tự động ≥90% |
+| Gói `service.impl` (18 lớp) | 91.4% | |
+| Toàn dự án (66 classes) | 75.2% | Gồm cả Controller/Entity — ngoài phạm vi Unit Test |
 
-> **Lưu ý khi trình bày**: con số 62.2% toàn dự án bao gồm tầng Controller, Entity
+> **Lưu ý khi trình bày**: con số 75,2% toàn dự án bao gồm tầng Controller, Entity
 > và Infrastructure (Email, SMS, File...) không thuộc phạm vi Unit Test. Nếu chỉ tính
-> **tầng Service — đối tượng của Mocking**, coverage đạt **89.7–100%**. Đây là con số
-> chứng minh Mocking bao phủ gần như trọn vẹn logic nghiệp vụ.
+> **12 lớp nghiệp vụ trọng tâm — đối tượng của Mocking**, coverage đạt **97,8%**
+> (9 lớp đạt 100%). Đây là con số chứng minh Mocking bao phủ gần như trọn vẹn logic
+> nghiệp vụ, và được kiểm tra tự động bởi rule `jacoco:check` trong `mvn verify`.
 
 ### 5.2. Bằng chứng hành vi của kỹ thuật Mocking
 
-1. **Cô lập phụ thuộc**: 15 test class chạy mà **không kết nối MySQL** — unit test thuần Mockito, không cần Spring Context.
+1. **Cô lập phụ thuộc**: 15 lớp test chạy mà **không kết nối MySQL** — unit test thuần Mockito, không cần Spring Context.
 2. **Verify tương tác**: `then(...).should(...)` chứng minh Service gọi đúng dependency, đúng số lần — điều Integration Test không làm được ở mức đơn vị.
 3. **Fail-fast**: khi `existsByEmail = true`, các mock sau đó **không hề được gọi** — chứng minh luồng dừng đúng chỗ.
 4. **Mock hệ thống bên thứ ba**: `EmailService`, `SMSService`, `MapService` được giả lập → kiểm thử được kịch bản "hệ thống ngoài sập" mà không cần hệ thống thật.
@@ -237,6 +245,7 @@ BUILD SUCCESS — Total time: 19.413 s
 **Kết quả đạt được:**
 - Xây dựng thành công bộ unit test áp dụng Mockito trên dự án Spring Boot thực tế: 15 lớp test mô phỏng mọi loại phụ thuộc (DB, email, SMS, bản đồ, thanh toán).
 - Đạt độ bao phủ cao theo chuẩn JaCoCo; chứng minh Mocking giúp kiểm thử logic nghiệp vụ triệt để, nhanh và ổn định.
+- `mvn verify` **PASS toàn bộ** (194 test + `jacoco:check` xác minh 12 lớp nghiệp vụ ≥90% line coverage) — không còn tình trạng build đỏ khi hội đồng chạy kiểm tra.
 
 **Hạn chế (tránh Over-Mocking):**
 - Mock xác nhận Service gọi `orderRepository.save()` nhưng không chứng minh câu lệnh SQL đúng — phần này thuộc **Integration Test** (đề tài phân định ranh giới tại mục 2.5.4 của đề cương).

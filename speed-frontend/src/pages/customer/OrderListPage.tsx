@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/redux/store';
 import { orderService } from '@/services/orderService';
@@ -23,11 +23,29 @@ const formatDate = (iso: string) =>
 
 export default function OrderListPage() {
   const customerId = useSelector((s: RootState) => s.auth.user?.customerId);
+  const navigate = useNavigate();
   const [tab, setTab] = useState('ALL');
   const [search, setSearch] = useState('');
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [trackCode, setTrackCode] = useState('');
+  const [tracking, setTracking] = useState(false);
+  const [trackError, setTrackError] = useState<string | null>(null);
+
+  const trackOrder = async () => {
+    if (!trackCode.trim()) return;
+    setTracking(true);
+    setTrackError(null);
+    try {
+      const res = await orderService.getOrderByCode(trackCode.trim().toUpperCase());
+      navigate(`/orders/${res.data.data.id}`);
+    } catch (e: any) {
+      setTrackError(e.response?.data?.message || 'Không tìm thấy đơn hàng với mã này');
+    } finally {
+      setTracking(false);
+    }
+  };
 
   useEffect(() => {
     if (!customerId) {
@@ -67,6 +85,23 @@ export default function OrderListPage() {
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo mã đơn hoặc địa chỉ..."
           className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white transition-all duration-200" />
+      </div>
+
+      {/* Track by order code */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-5 flex flex-wrap items-center gap-2">
+        <span className="text-sm font-semibold text-gray-700 shrink-0">📦 Tra cứu đơn theo mã</span>
+        <input
+          value={trackCode}
+          onChange={(e) => { setTrackCode(e.target.value.toUpperCase()); setTrackError(null); }}
+          onKeyDown={(e) => e.key === 'Enter' && trackOrder()}
+          placeholder="VD: SPD1A2B3C4D"
+          className="flex-1 min-w-40 px-4 py-2 border border-gray-200 rounded-xl text-sm font-mono uppercase bg-gray-50 transition-all duration-200"
+        />
+        <button onClick={trackOrder} disabled={tracking || !trackCode.trim()}
+          className="px-5 py-2 bg-red-gradient text-white rounded-xl text-sm font-bold shadow-lg shadow-red-200 hover:opacity-90 transition-all duration-200 disabled:opacity-60">
+          {tracking ? 'Đang tìm...' : 'Tra cứu'}
+        </button>
+        {trackError && <p className="w-full text-xs text-red-600 font-medium">❌ {trackError}</p>}
       </div>
 
       {/* Status tabs */}

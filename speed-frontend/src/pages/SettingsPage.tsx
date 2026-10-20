@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@/redux/store';
-import { logout } from '@/redux/slices/authSlice';
+import { logoutAsync } from '@/redux/slices/authSlice';
+import type { AppDispatch } from '@/redux/store';
 import { useNavigate } from 'react-router-dom';
 
 function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void }) {
@@ -22,13 +23,13 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: () => void 
 export default function SettingsPage() {
   const { user } = useSelector((s: RootState) => s.auth);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [notif, setNotif] = useState({ push: true, email: false, sms: true, promo: false });
   const [prefs, setPrefs] = useState({ language: 'vi', theme: 'light' });
   const [confirmLogout, setConfirmLogout] = useState(false);
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutAsync());
     navigate('/login');
   };
 

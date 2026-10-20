@@ -3,9 +3,11 @@ package com.speed.delivery.controller;
 import com.speed.delivery.dto.response.ApiResponse;
 import com.speed.delivery.dto.response.DashboardResponse;
 import com.speed.delivery.dto.response.LogResponse;
+import com.speed.delivery.dto.response.OrderResponse;
 import com.speed.delivery.dto.response.UserResponse;
 import com.speed.delivery.service.AdminService;
 import com.speed.delivery.service.AuditLogService;
+import com.speed.delivery.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final AuditLogService auditLogService;
+    private final OrderService orderService;
 
     @GetMapping("/dashboard")
     @Operation(summary = "Thống kê dashboard")
@@ -67,6 +70,13 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Page<LogResponse>>> getUserLogs(
             @PathVariable Long userId, Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(auditLogService.getUserLogs(userId, pageable)));
+    }
+
+    @GetMapping("/orders")
+    @Operation(summary = "Danh sách tất cả đơn hàng (lọc theo trạng thái)")
+    public ResponseEntity<ApiResponse<Page<OrderResponse>>> getOrders(
+            @RequestParam(required = false) String status, Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getAllOrders(status, pageable)));
     }
 }
 

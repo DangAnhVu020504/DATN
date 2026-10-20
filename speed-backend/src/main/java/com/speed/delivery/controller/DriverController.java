@@ -1,6 +1,7 @@
 package com.speed.delivery.controller;
 
 import com.speed.delivery.dto.response.ApiResponse;
+import com.speed.delivery.dto.response.DriverResponse;
 import com.speed.delivery.dto.response.OrderResponse;
 import com.speed.delivery.service.DriverService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/drivers")
@@ -58,9 +60,21 @@ public class DriverController {
         return ResponseEntity.ok(ApiResponse.success(driverService.getDeliveryHistory(driverId, pageable)));
     }
 
+    @GetMapping("/{driverId}/available-orders")
+    @Operation(summary = "Danh sách đơn mới có thể nhận (PENDING/CONFIRMED)")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getAvailableOrders(@PathVariable Long driverId) {
+        return ResponseEntity.ok(ApiResponse.success(driverService.getAvailableOrders(driverId)));
+    }
+
     @GetMapping("/{driverId}/earnings")
     @Operation(summary = "Thu nhập tài xế")
     public ResponseEntity<ApiResponse<BigDecimal>> getEarnings(@PathVariable Long driverId) {
         return ResponseEntity.ok(ApiResponse.success(driverService.getEarnings(driverId)));
+    }
+
+    @GetMapping("/{driverId}")
+    @Operation(summary = "Hồ sơ tài xế")
+    public ResponseEntity<ApiResponse<DriverResponse>> getDriverProfile(@PathVariable Long driverId) {
+        return ResponseEntity.ok(ApiResponse.success(driverService.getDriverProfile(driverId)));
     }
 }

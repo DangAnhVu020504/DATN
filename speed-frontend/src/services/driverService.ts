@@ -1,7 +1,10 @@
 ﻿import api from './api';
-import type { ApiResponse, OrderResponse, Page } from '@/types';
+import type { ApiResponse, DriverProfileResponse, OrderResponse, Page } from '@/types';
 
 export const driverService = {
+  getProfile: (driverId: number) =>
+    api.get<ApiResponse<DriverProfileResponse>>(`/drivers/${driverId}`),
+
   toggleAvailability: (driverId: number, available: boolean) =>
     api.put<ApiResponse<void>>(`/drivers/${driverId}/availability`, null, { params: { available } }),
 
@@ -18,6 +21,9 @@ export const driverService = {
     api.get<ApiResponse<Page<OrderResponse>>>(`/drivers/${driverId}/orders`, {
       params: { page, size, sort },
     }),
+
+  getAvailableOrders: (driverId: number) =>
+    api.get<ApiResponse<OrderResponse[]>>(`/drivers/${driverId}/available-orders`),
 
   getEarnings: (driverId: number) =>
     api.get<ApiResponse<number>>(`/drivers/${driverId}/earnings`),

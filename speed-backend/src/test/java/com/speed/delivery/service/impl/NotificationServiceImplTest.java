@@ -4,6 +4,7 @@ import com.speed.delivery.dto.response.NotificationResponse;
 import com.speed.delivery.entity.Notification;
 import com.speed.delivery.entity.User;
 import com.speed.delivery.enums.NotificationType;
+import com.speed.delivery.exception.ResourceNotFoundException;
 import com.speed.delivery.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -195,6 +196,40 @@ class NotificationServiceImplTest {
             // Verify: KHÔNG gọi save (vì ifPresent không thỏa)
             then(notificationRepository).should(times(1)).findById(999L);
             then(notificationRepository).should(never()).save(any(Notification.class));
+        }
+    }
+
+    // ==================== DELETE NOTIFICATION ====================
+    @Nested
+    @DisplayName("Delete Notification")
+    class DeleteNotificationTests {
+
+        @Test
+        @DisplayName("NF-TC08: Xóa notification thành công")
+        void deleteNotification_Success() {
+            // Arrange: Notification tồn tại
+            given(notificationRepository.findById(1L)).willReturn(Optional.of(testNotification));
+
+            // Act: Xóa notification
+            notificationService.deleteNotification(1L);
+
+            // Verify: findById rồi delete đúng đối tượng
+            then(notificationRepository).should(times(1)).findById(1L);
+            then(notificationRepository).should(times(1)).delete(testNotification);
+        }
+
+        @Test
+        @DisplayName("NF-TC09: Xóa notification - không tìm thấy → ResourceNotFoundException")
+        void deleteNotification_NotFound() {
+            // Arrange: Notification không tồn tại
+            given(notificationRepository.findById(999L)).willReturn(Optional.empty());
+
+            // Act & Assert: Phải throw ResourceNotFoundException
+            assertThatThrownBy(() -> notificationService.deleteNotification(999L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            // Verify: KHÔNG gọi delete
+            then(notificationRepository).should(never()).delete(any(Notification.class));
         }
     }
 

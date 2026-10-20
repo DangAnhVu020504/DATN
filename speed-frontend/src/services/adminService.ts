@@ -1,9 +1,15 @@
 ﻿import api from './api';
-import type { ApiResponse, UserResponse, DashboardResponse, LogResponse, Page } from '@/types';
+import type { ApiResponse, UserResponse, DashboardResponse, LogResponse, OrderResponse, Page } from '@/types';
 
 export const adminService = {
   getDashboard: () =>
     api.get<ApiResponse<DashboardResponse>>('/admin/dashboard'),
+
+  getOrders: (page = 0, size = 20, status?: string) =>
+    api.get<ApiResponse<Page<OrderResponse>>>('/admin/orders', {
+      params: { page, size, ...(status && status !== 'ALL' ? { status } : {}) },
+    }),
+
 
   getUsers: (page = 0, size = 10) =>
     api.get<ApiResponse<Page<UserResponse>>>('/admin/users', { params: { page, size } }),

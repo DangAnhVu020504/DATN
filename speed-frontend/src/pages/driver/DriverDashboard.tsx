@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/redux/store';
@@ -14,22 +14,27 @@ export default function DriverDashboard() {
   const [online, setOnline] = useState(true);
   const [earnings, setEarnings] = useState<number | null>(null);
   const [history, setHistory] = useState<OrderResponse[]>([]);
+  const [newOrders, setNewOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<number | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!driverId) { setLoading(false); return; }
     Promise.all([
       driverService.getEarnings(driverId),
       driverService.getDeliveryHistory(driverId, 0, 20),
+      driverService.getAvailableOrders(driverId),
     ])
-      .then(([earnRes, histRes]) => {
+      .then(([earnRes, histRes, availRes]) => {
         setEarnings(earnRes.data.data);
-        setHistory(histRes.data.data.content);
+        setHistory(histRes.data.data?.content ?? []);
+        setNewOrders(availRes.data.data ?? []);
       })
       .catch(() => { })
       .finally(() => setLoading(false));
   }, [driverId]);
+
+  useEffect(() => { load(); }, [load]);
 
   const activeOrders = history.filter((o) => ['ASSIGNED', 'PICKING_UP', 'IN_TRANSIT'].includes(o.status));
   const deliveredToday = history.filter((o) => o.status === 'DELIVERED');
@@ -50,6 +55,8 @@ export default function DriverDashboard() {
     setActing(orderId);
     try {
       await driverService.acceptOrder(driverId, orderId);
+      setNewOrders((os) => os.filter((o) => o.id !== orderId));
+      load();
       navigate('/driver/orders');
     } catch (e: any) {
       alert(e.response?.data?.message || 'Nhận đơn thất bại');
@@ -63,7 +70,7 @@ export default function DriverDashboard() {
     setActing(orderId);
     try {
       await driverService.rejectOrder(driverId, orderId);
-      setHistory((hs) => hs.filter((h) => h.id !== orderId));
+      setNewOrders((os) => os.filter((o) => o.id !== orderId));
     } catch (e: any) {
       alert(e.response?.data?.message || 'Từ chối thất bại');
     } finally {
@@ -110,6 +117,51 @@ export default function DriverDashboard() {
         ))}
       </div>
 
+      {/* New orders - available to accept */}
+      {newOrders.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-black text-gray-900 text-lg" style={{ fontFamily: 'Nunito' }}>🆕 Đơn hàng mới</h2>
+            <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">{newOrders.length} đơn chờ nhận</span>
+          </div>
+          {!online && (
+            <p className="mb-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium">
+              ⚠️ Bạn đang Offline — bật "Đang nhận đơn" để có thể nhận các đơn này.
+            </p>
+          )}
+          <div className="space-y-3">
+            {newOrders.map((o) => (
+              <div key={o.id} className="bg-white rounded-2xl shadow-sm border border-red-100 p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-bold text-gray-900 text-sm font-mono">{o.orderCode}</span>
+                  <span className="font-bold text-red-600">{formatPrice(o.totalPrice)}</span>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-green-500 shrink-0 mt-0.5">⬆</span>
+                    <span className="text-gray-600">{o.pickupAddress}</span>
+                  </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <span className="text-red-500 shrink-0 mt-0.5">⬇</span>
+                    <span className="text-gray-600">{o.deliveryAddress}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <button onClick={() => handleReject(o.id)} disabled={acting === o.id}
+                    className="px-3 py-1.5 border border-gray-200 text-gray-500 rounded-lg text-xs font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60">
+                    Từ chối
+                  </button>
+                  <button onClick={() => handleAccept(o.id)} disabled={acting === o.id || !online}
+                    className="px-4 py-1.5 bg-red-gradient text-white rounded-lg text-xs font-semibold shadow-md shadow-red-200 hover:opacity-90 transition-all disabled:opacity-60">
+                    {acting === o.id ? 'Đang xử lý...' : '✅ Nhận đơn'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Active orders */}
       {activeOrders.length > 0 && (
         <div className="mb-6">
@@ -134,15 +186,11 @@ export default function DriverDashboard() {
                     <span className="text-gray-600">{o.deliveryAddress}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2">
-                  <button onClick={() => handleReject(o.id)} disabled={acting === o.id}
-                    className="px-3 py-1.5 border border-gray-200 text-gray-500 rounded-lg text-xs font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60">
-                    Từ chối
-                  </button>
-                  <button onClick={() => handleAccept(o.id)} disabled={acting === o.id}
-                    className="px-4 py-1.5 bg-red-gradient text-white rounded-lg text-xs font-semibold shadow-md shadow-red-200 hover:opacity-90 transition-all disabled:opacity-60">
-                    {acting === o.id ? 'Đang xử lý...' : '✅ Cập nhật trạng thái'}
-                  </button>
+                <div className="flex items-center justify-end">
+                  <Link to="/driver/orders"
+                    className="px-4 py-1.5 bg-red-gradient text-white rounded-lg text-xs font-semibold shadow-md shadow-red-200 hover:opacity-90 transition-all">
+                    Tiếp tục giao →
+                  </Link>
                 </div>
               </div>
             ))}

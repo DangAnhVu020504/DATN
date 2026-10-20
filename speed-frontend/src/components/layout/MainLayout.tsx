@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from '@/redux/store';
-import { logout } from '@/redux/slices/authSlice';
+import type { RootState, AppDispatch } from '@/redux/store';
+import { logoutAsync } from '@/redux/slices/authSlice';
+import { notificationService } from '@/services/notificationService';
 
 type Role = 'customer' | 'driver' | 'admin';
 
@@ -14,6 +15,7 @@ const navItems: Record<Role, { path: string; label: string; icon: string }[]> = 
     { path: '/vouchers', label: 'Voucher', icon: '🎟️' },
     { path: '/profile', label: 'Hồ sơ', icon: '👤' },
     { path: '/notifications', label: 'Thông báo', icon: '🔔' },
+    { path: '/settings', label: 'Cài đặt', icon: '⚙️' },
   ],
   driver: [
     { path: '/driver', label: 'Tổng quan', icon: '🏠' },
@@ -22,6 +24,7 @@ const navItems: Record<Role, { path: string; label: string; icon: string }[]> = 
     { path: '/driver/profile', label: 'Hồ sơ', icon: '👤' },
     { path: '/driver/reviews', label: 'Đánh giá', icon: '⭐' },
     { path: '/notifications', label: 'Thông báo', icon: '🔔' },
+    { path: '/settings', label: 'Cài đặt', icon: '⚙️' },
   ],
   admin: [
     { path: '/admin', label: 'Tổng quan', icon: '🛡️' },
@@ -30,6 +33,7 @@ const navItems: Record<Role, { path: string; label: string; icon: string }[]> = 
     { path: '/admin/vouchers', label: 'Voucher', icon: '🎟️' },
     { path: '/admin/logs', label: 'Audit Logs', icon: '📜' },
     { path: '/notifications', label: 'Thông báo', icon: '🔔' },
+    { path: '/settings', label: 'Cài đặt', icon: '⚙️' },
   ],
 };
 
@@ -42,9 +46,22 @@ const roleLabels: Record<Role, string> = {
 export default function MainLayout() {
   const { pathname: location } = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((s: RootState) => s.auth);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const userId = user?.userId;
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    notificationService
+      .getUnreadCount(userId)
+      .then((res) => { if (!cancelled) setUnreadCount(res.data.data ?? 0); })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [userId, location]);
 
   const roles = user?.roles ?? [];
   const role: Role = roles.includes('ROLE_ADMIN') || roles.includes('ADMIN')
@@ -59,7 +76,7 @@ export default function MainLayout() {
   const avatar = userName.charAt(0).toUpperCase();
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutAsync());
     navigate('/login');
   };
 
@@ -106,7 +123,7 @@ export default function MainLayout() {
           </div>
           <ul className="space-y-1">
             {nav.map((item) => (
-              <li key={item.path}>
+              <li key={item.path} className="relative">
                 <Link
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
@@ -119,6 +136,11 @@ export default function MainLayout() {
                   <span className="text-base">{item.icon}</span>
                   <span>{item.label}</span>
                 </Link>
+                {item.path === '/notifications' && unreadCount > 0 && (
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 min-w-5 h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </li>
             ))}
           </ul>

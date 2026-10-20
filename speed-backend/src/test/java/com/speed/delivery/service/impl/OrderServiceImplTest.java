@@ -1,6 +1,7 @@
 package com.speed.delivery.service.impl;
 
 import com.speed.delivery.dto.request.CreateOrderRequest;
+import com.speed.delivery.dto.response.OrderHistoryResponse;
 import com.speed.delivery.dto.response.OrderResponse;
 import com.speed.delivery.entity.*;
 import com.speed.delivery.enums.*;
@@ -47,6 +48,7 @@ class OrderServiceImplTest {
     @Mock private VoucherService voucherService;
     @Mock private DistanceService distanceService;
     @Mock private AuditLogService auditLogService;
+    @Mock private WalletService walletService;
 
     @InjectMocks private OrderServiceImpl orderService;
 
@@ -217,6 +219,71 @@ class OrderServiceImplTest {
         }
     }
 
+    // ===== AVAILABLE ORDERS & HISTORY =====
+    @Nested @DisplayName("Available Orders & History") class AvailableOrdersAndHistoryTests {
+        @Test @DisplayName("ORD-TC18: Lấy danh sách đơn mới (PENDING + CONFIRMED) cho tài xế")
+        void getAvailableOrders_Success() {
+            // Arrange: 1 đơn PENDING + 1 đơn CONFIRMED
+            Order confirmedOrder = Order.builder().id(2L).orderCode("SPD87654321")
+                    .customer(customer).status(OrderStatus.CONFIRMED)
+                    .deliveryType(DeliveryType.STANDARD).build();
+            given(orderRepository.findByStatus(OrderStatus.PENDING)).willReturn(List.of(testOrder));
+            given(orderRepository.findByStatus(OrderStatus.CONFIRMED)).willReturn(List.of(confirmedOrder));
+
+            // Act
+            List<OrderResponse> result = orderService.getAvailableOrders();
+
+            // Assert: gộp cả 2 trạng thái
+            assertThat(result).hasSize(2);
+            assertThat(result).extracting(OrderResponse::getStatus)
+                    .containsExactly("PENDING", "CONFIRMED");
+
+            // Verify: query cả 2 trạng thái
+            then(orderRepository).should(times(1)).findByStatus(OrderStatus.PENDING);
+            then(orderRepository).should(times(1)).findByStatus(OrderStatus.CONFIRMED);
+        }
+
+        @Test @DisplayName("ORD-TC19: Lấy lịch sử đơn hàng - map đủ trường")
+        void getOrderHistory_Success() {
+            // Arrange
+            OrderHistory h1 = OrderHistory.builder().id(1L).order(testOrder)
+                    .status(OrderStatus.PENDING).note("Đơn hàng được tạo")
+                    .changedBy(1L).createdAt(LocalDateTime.of(2026, 10, 1, 9, 0)).build();
+            OrderHistory h2 = OrderHistory.builder().id(2L).order(testOrder)
+                    .status(OrderStatus.CONFIRMED).note("Đã xác nhận")
+                    .changedBy(1L).createdAt(LocalDateTime.of(2026, 10, 1, 9, 5)).build();
+            given(orderRepository.findById(1L)).willReturn(Optional.of(testOrder));
+            given(orderHistoryRepository.findByOrderIdOrderByCreatedAtDesc(1L))
+                    .willReturn(List.of(h2, h1));
+
+            // Act
+            List<OrderHistoryResponse> result = orderService.getOrderHistory(1L);
+
+            // Assert
+            assertThat(result).hasSize(2);
+            assertThat(result.get(0).getStatus()).isEqualTo("CONFIRMED");
+            assertThat(result.get(0).getNote()).isEqualTo("Đã xác nhận");
+            assertThat(result.get(1).getStatus()).isEqualTo("PENDING");
+
+            // Verify
+            then(orderHistoryRepository).should(times(1))
+                    .findByOrderIdOrderByCreatedAtDesc(1L);
+        }
+
+        @Test @DisplayName("ORD-TC20: Lấy lịch sử - đơn không tồn tại → ResourceNotFoundException")
+        void getOrderHistory_NotFound() {
+            // Arrange
+            given(orderRepository.findById(99L)).willReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> orderService.getOrderHistory(99L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            // Verify: KHÔNG query lịch sử khi đơn không tồn tại
+            then(orderHistoryRepository).shouldHaveNoInteractions();
+        }
+    }
+
     // ===== ASSIGN DRIVER =====
     @Nested @DisplayName("Assign Driver") class AssignDriverTests {
         @Test @DisplayName("Gán tài xế thành công")
@@ -297,6 +364,9 @@ class OrderServiceImplTest {
             assertThat(testOrder.getStatus()).isEqualTo(OrderStatus.DELIVERED);
             assertThat(driver.getTotalDeliveries()).isEqualTo(11);
             assertThat(driver.getIsAvailable()).isTrue();
+
+            // Verify: thu nhập được cộng vào ví tài xế
+            then(walletService).should(times(1)).addEarning(eq(1L), eq(1L), any(BigDecimal.class));
         }
 
         @Test @DisplayName("Cập nhật trạng thái không hợp lệ (DELIVERED → PENDING)")

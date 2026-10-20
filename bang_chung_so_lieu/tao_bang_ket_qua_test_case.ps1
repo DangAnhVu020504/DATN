@@ -124,7 +124,7 @@ $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine('input { font-family: inherit; font-size: 14px; padding: 4px; width: 340px; margin-bottom: 8px; }')
 [void]$sb.AppendLine('</style></head><body>')
 [void]$sb.AppendLine('<h1>Kết quả thực thi của từng test case</h1>')
-[void]$sb.AppendLine('<p>Nguồn số liệu: báo cáo Maven Surefire trong thư mục speed-backend/target/surefire-reports ghép với tên hiển thị trong mã nguồn kiểm thử. Số liệu của lần chạy 158 lượt ngày 1 tháng 10 năm 2026; riêng 2 lớp đối chứng lấy từ lần chạy toàn bộ 163 lượt cùng ngày.</p>')
+[void]$sb.AppendLine('<p>Nguồn số liệu: báo cáo Maven Surefire trong thư mục speed-backend/target/surefire-reports ghép với tên hiển thị trong mã nguồn kiểm thử. Số liệu của lần chạy 194 lượt ngày 18 tháng 10 năm 2026 (lệnh mvn clean verify, đã gồm kiểm tra ngưỡng độ bao phủ).</p>')
 $mainLuot = ($mainRows | Measure-Object -Property SoLuot -Sum).Sum
 $mainTime = ($mainRows | Measure-Object -Property TimeNum -Sum).Sum
 $mainFail = @($mainRows | Where-Object { $_.KetQua -ne 'Đạt' }).Count
@@ -143,8 +143,8 @@ function Hien-Bang($nhanTieuDe, $ghiChu, $list) {
     }
     [void]$sb.AppendLine('</tbody></table>')
 }
-Hien-Bang 'Bộ kiểm thử đơn vị (phạm vi của báo cáo)' 'Cột thời gian là tổng thời gian thực thi của từng test case theo báo cáo Surefire. Nếu cộng thêm chi phí dựng kết nối giữa các test case thì tổng thời gian của 14 lớp là 10,238 giây.' $mainRows
-Hien-Bang 'Hai lớp đối chứng dùng để so sánh có và không dùng kỹ thuật giả lập' 'Kết quả của 2 lớp này lấy từ lần chạy toàn bộ 163 lượt. Thời gian khởi động nền tảng của lớp không dùng kỹ thuật giả lập là 19.438 mili giây, được tính vào thời gian của lớp nên không nằm trong cột thời gian của từng test case.' $demoRows
+Hien-Bang 'Bộ kiểm thử đơn vị (phạm vi của báo cáo)' ('Cột thời gian là tổng thời gian thực thi của từng test case theo báo cáo Surefire. Nếu cộng thêm chi phí dựng kết nối giữa các test case thì tổng thời gian của 15 lớp là ' + ('{0:N3}' -f $mainTime) + ' giây.') $mainRows
+Hien-Bang 'Hai lớp đối chứng dùng để so sánh có và không dùng kỹ thuật giả lập' 'Kết quả của 2 lớp này lấy từ lần chạy toàn bộ 194 lượt. Thời gian khởi động nền tảng của lớp không dùng kỹ thuật giả lập là 39.654 mili giây, được tính vào thời gian của lớp nên không nằm trong cột thời gian của từng test case.' $demoRows
 [void]$sb.AppendLine('<script>function loc(){var k=document.getElementById("q").value.toLowerCase();var rs=document.querySelectorAll("table tbody tr");for(var i=0;i<rs.length;i++){rs[i].style.display=(rs[i].innerText.toLowerCase().indexOf(k)>-1)?"":"none";}}</script>')
 [void]$sb.AppendLine('</body></html>')
 $htmlPath = $root + '\Ket_qua_test_case.html'

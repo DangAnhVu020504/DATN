@@ -37,6 +37,13 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success("Đã đánh dấu đã đọc"));
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Xóa thông báo")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa thông báo"));
+    }
+
     @GetMapping("/user/{userId}/unread-count")
     @Operation(summary = "Số thông báo chưa đọc")
     public ResponseEntity<ApiResponse<Long>> getUnreadCount(@PathVariable Long userId) {

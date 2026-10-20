@@ -1,5 +1,6 @@
 package com.speed.delivery.service.impl;
 
+import com.speed.delivery.dto.response.DriverResponse;
 import com.speed.delivery.dto.response.OrderResponse;
 import com.speed.delivery.entity.*;
 import com.speed.delivery.enums.*;
@@ -30,7 +31,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 /**
- * Unit Tests cho DriverServiceImpl - 12 test cases.
+ * Unit Tests cho DriverServiceImpl - 18 test cases.
  *
  * <p>Kỹ thuật sử dụng:</p>
  * <ul>
@@ -78,7 +79,8 @@ class DriverServiceImplTest {
 
         driverUser = User.builder()
                 .id(2L).email("driver@speed.vn").fullName("Tran Van Tai Xe")
-                .phone("0902222222").isActive(true).roles(Set.of(driverRole)).build();
+                .phone("0902222222").avatarUrl("https://speed.vn/avatars/driver1.jpg")
+                .isActive(true).roles(Set.of(driverRole)).build();
 
         customerUser = User.builder()
                 .id(1L).email("customer@speed.vn").fullName("Nguyen Van Khach")
@@ -86,6 +88,7 @@ class DriverServiceImplTest {
 
         testDriver = Driver.builder()
                 .id(1L).user(driverUser).isAvailable(true).status(DriverStatus.ONLINE)
+                .licensePlate("59A-12345").vehicleType("MOTORBIKE")
                 .totalDeliveries(10).totalEarnings(BigDecimal.valueOf(800000))
                 .rating(BigDecimal.valueOf(4.5)).build();
 
@@ -199,6 +202,20 @@ class DriverServiceImplTest {
             // Verify: OrderService KHÔNG được gọi khi driver không khả dụng
             then(orderService).shouldHaveNoInteractions();
         }
+
+        @Test
+        @DisplayName("DR-TC15: Nhận đơn - driver không tồn tại → ResourceNotFoundException")
+        void acceptOrder_DriverNotFound() {
+            // Arrange: DriverRepository trả về empty
+            given(driverRepository.findById(999L)).willReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> driverService.acceptOrder(999L, 1L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            // Verify: Không delegate sang OrderService
+            then(orderService).shouldHaveNoInteractions();
+        }
     }
 
     // ==================== REJECT ORDER ====================
@@ -217,6 +234,22 @@ class DriverServiceImplTest {
                 .log(eq(2L), eq("REJECT_ORDER"), eq("Order"), eq(1L), anyString());
         then(notificationService).should(times(1))
                 .sendOrderNotification(eq(1L), eq(1L), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("DR-TC18: Từ chối đơn - đơn không tồn tại → ResourceNotFoundException")
+    void rejectOrder_OrderNotFound() {
+        // Arrange: Driver tồn tại, Order không tìm thấy
+        given(driverRepository.findById(1L)).willReturn(Optional.of(testDriver));
+        given(orderRepository.findById(999L)).willReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> driverService.rejectOrder(1L, 999L))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        // Verify: Không ghi audit log, không gửi thông báo
+        then(auditLogService).shouldHaveNoInteractions();
+        then(notificationService).shouldHaveNoInteractions();
     }
 
     // ==================== COMPLETE DELIVERY ====================
@@ -281,6 +314,21 @@ class DriverServiceImplTest {
             // Verify: OrderService KHÔNG được gọi
             then(orderService).shouldHaveNoInteractions();
         }
+
+        @Test
+        @DisplayName("DR-TC16: Hoàn thành giao hàng - driver không tồn tại → ResourceNotFoundException")
+        void completeDelivery_DriverNotFound() {
+            // Arrange
+            given(driverRepository.findById(999L)).willReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> driverService.completeDelivery(999L, 1L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            // Verify: Không tìm order, không delegate sang OrderService
+            then(orderRepository).shouldHaveNoInteractions();
+            then(orderService).shouldHaveNoInteractions();
+        }
     }
 
     // ==================== GET DELIVERY HISTORY & EARNINGS ====================
@@ -332,6 +380,96 @@ class DriverServiceImplTest {
 
             // Act & Assert: Phải throw ResourceNotFoundException
             assertThatThrownBy(() -> driverService.getEarnings(999L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("DR-TC19: Lấy danh sách đơn mới (available orders) - delegate sang OrderService")
+        void getAvailableOrders_Success() {
+            // Arrange: Driver tồn tại, OrderService trả về danh sách đơn PENDING
+            given(driverRepository.findById(1L)).willReturn(Optional.of(testDriver));
+            List<OrderResponse> expected = List.of(
+                    OrderResponse.builder().id(2L).orderCode("SPDNEWWWWW").status("PENDING").build());
+            given(orderService.getAvailableOrders()).willReturn(expected);
+
+            // Act
+            List<OrderResponse> result = driverService.getAvailableOrders(1L);
+
+            // Assert
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getStatus()).isEqualTo("PENDING");
+
+            // Verify: delegate sang OrderService.getAvailableOrders
+            then(orderService).should(times(1)).getAvailableOrders();
+        }
+
+        @Test
+        @DisplayName("DR-TC20: Lấy đơn mới - driver không tồn tại → ResourceNotFoundException")
+        void getAvailableOrders_DriverNotFound() {
+            // Arrange
+            given(driverRepository.findById(999L)).willReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> driverService.getAvailableOrders(999L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            // Verify: KHÔNG delegate sang OrderService
+            then(orderService).shouldHaveNoInteractions();
+        }
+
+        @Test
+        @DisplayName("DR-TC17: Lấy lịch sử - driver không tồn tại → ResourceNotFoundException")
+        void getDeliveryHistory_DriverNotFound() {
+            // Arrange
+            given(driverRepository.findById(999L)).willReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> driverService.getDeliveryHistory(999L, PageRequest.of(0, 10)))
+                    .isInstanceOf(ResourceNotFoundException.class);
+
+            // Verify: Không delegate sang OrderService
+            then(orderService).shouldHaveNoInteractions();
+        }
+    }
+
+    // ==================== GET DRIVER PROFILE ====================
+    @Nested
+    @DisplayName("Get Driver Profile")
+    class GetDriverProfileTests {
+
+        @Test
+        @DisplayName("DR-TC13: Lấy hồ sơ tài xế thành công - map đủ trường")
+        void getDriverProfile_Success() {
+            // Arrange: Driver tồn tại đầy đủ thông tin
+            given(driverRepository.findById(1L)).willReturn(Optional.of(testDriver));
+
+            // Act
+            DriverResponse profile = driverService.getDriverProfile(1L);
+
+            // Assert: Map đầy đủ thông tin user + driver
+            assertThat(profile.getId()).isEqualTo(1L);
+            assertThat(profile.getUserId()).isEqualTo(2L);
+            assertThat(profile.getFullName()).isEqualTo("Tran Van Tai Xe");
+            assertThat(profile.getPhone()).isEqualTo("0902222222");
+            assertThat(profile.getEmail()).isEqualTo("driver@speed.vn");
+            assertThat(profile.getAvatarUrl()).isEqualTo("https://speed.vn/avatars/driver1.jpg");
+            assertThat(profile.getLicensePlate()).isEqualTo("59A-12345");
+            assertThat(profile.getVehicleType()).isEqualTo("MOTORBIKE");
+            assertThat(profile.getStatus()).isEqualTo("ONLINE");
+            assertThat(profile.getIsAvailable()).isTrue();
+            assertThat(profile.getRating()).isEqualByComparingTo("4.5");
+            assertThat(profile.getTotalDeliveries()).isEqualTo(10);
+            assertThat(profile.getTotalEarnings()).isEqualByComparingTo("800000");
+        }
+
+        @Test
+        @DisplayName("DR-TC14: Lấy hồ sơ - driver không tồn tại → ResourceNotFoundException")
+        void getDriverProfile_DriverNotFound() {
+            // Arrange
+            given(driverRepository.findById(999L)).willReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> driverService.getDriverProfile(999L))
                     .isInstanceOf(ResourceNotFoundException.class);
         }
     }

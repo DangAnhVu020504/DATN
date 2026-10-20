@@ -1,14 +1,7 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-const USERS = [
-  { id: 1, name: 'Nguyễn Văn An', email: 'an.nguyen@gmail.com', phone: '0901 234 567', role: 'CUSTOMER', status: 'ACTIVE', created: '01/01/2026' },
-  { id: 2, name: 'Trần Minh Khoa', email: 'khoa.driver@speed.vn', phone: '0908 765 432', role: 'DRIVER', status: 'ACTIVE', created: '15/02/2026' },
-  { id: 3, name: 'Lê Thị Mai', email: 'mai.le@gmail.com', phone: '0912 345 678', role: 'CUSTOMER', status: 'ACTIVE', created: '10/03/2026' },
-  { id: 4, name: 'Phạm Quốc Toản', email: 'toan.driver@speed.vn', phone: '0933 123 456', role: 'DRIVER', status: 'INACTIVE', created: '20/03/2026' },
-  { id: 5, name: 'Hoàng Thị Lan', email: 'lan.hoang@gmail.com', phone: '0944 567 890', role: 'CUSTOMER', status: 'ACTIVE', created: '05/04/2026' },
-  { id: 6, name: 'Admin Hệ Thống', email: 'admin@speed.vn', phone: '0900 000 001', role: 'ADMIN', status: 'ACTIVE', created: '01/01/2026' },
-];
+import { adminService } from '@/services/adminService';
+import type { UserResponse } from '@/types';
 
 const ROLE_CLS: Record<string, string> = {
   CUSTOMER: 'bg-blue-100 text-blue-700',
@@ -16,30 +9,75 @@ const ROLE_CLS: Record<string, string> = {
   ADMIN: 'bg-red-100 text-red-700',
 };
 
+const roleOf = (u: UserResponse) => (u.roles?.[0] ?? 'CUSTOMER').replace('ROLE_', '');
+
 export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [users, setUsers] = useState(USERS);
+  const [users, setUsers] = useState<UserResponse[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const load = useCallback(() => {
+    setLoading(true);
+    adminService
+      .getUsers(page - 1, 10)
+      .then((res) => {
+        setUsers(res.data.data?.content ?? []);
+        setTotalPages(res.data.data?.totalPages ?? 0);
+        setTotalElements(res.data.data?.totalElements ?? 0);
+      })
+      .catch(() => setError('Không thể tải danh sách người dùng'))
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  useEffect(() => { load(); }, [load]);
 
   const filtered = users.filter(
     (u) =>
-      (roleFilter === 'ALL' || u.role === roleFilter) &&
-      (u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
+      (roleFilter === 'ALL' || roleOf(u) === roleFilter) &&
+      ((u.fullName ?? '').toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const toggleActive = (id: number) =>
-    setUsers((us) => us.map((u) => (u.id === id ? { ...u, status: u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : u)));
+  const toggleActive = async (u: UserResponse) => {
+    try {
+      await adminService.toggleUserActive(u.id, !u.isActive);
+      load();
+    } catch {
+      setError('Không thể cập nhật trạng thái người dùng');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (deleteId === null) return;
+    try {
+      await adminService.deleteUser(deleteId);
+      setDeleteId(null);
+      load();
+    } catch (e: any) {
+      setDeleteId(null);
+      setError(e.response?.data?.message || 'Không thể xóa người dùng');
+    }
+  };
+
+  const formatDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('vi-VN') : '—');
 
   return (
     <div className="p-6 max-w-5xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black text-gray-900" style={{ fontFamily: 'Nunito' }}>Quản lý người dùng</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{users.length} người dùng</p>
+          <p className="text-gray-500 text-sm mt-0.5">{totalElements} người dùng</p>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">⚠️ {error}</div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-5">
@@ -85,66 +123,76 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filtered.map((u) => (
-              <tr key={u.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-red-gradient rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
-                      {u.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900">{u.name}</div>
-                      <div className="text-xs text-gray-400">{u.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600">{u.phone}</td>
-                <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${ROLE_CLS[u.role]}`}>{u.role}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                      u.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {u.status === 'ACTIVE' ? '● Hoạt động' : '○ Vô hiệu'}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-xs text-gray-400">{u.created}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <Link
-                      to={`/admin/users/${u.id}`}
-                      className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors text-sm"
-                      title="Xem chi tiết"
-                    >
-                      👁
-                    </Link>
-                    <button
-                      onClick={() => toggleActive(u.id)}
-                      className={`p-1.5 rounded-lg transition-colors text-sm ${
-                        u.status === 'ACTIVE' ? 'text-amber-500 hover:bg-amber-50' : 'text-green-500 hover:bg-green-50'
-                      }`}
-                      title={u.status === 'ACTIVE' ? 'Vô hiệu hóa' : 'Kích hoạt'}
-                    >
-                      {u.status === 'ACTIVE' ? '🔕' : '🔔'}
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(u.id)}
-                      className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm"
-                      title="Xóa"
-                    >
-                      🗑
-                    </button>
-                  </div>
+            {loading && (
+              <tr>
+                <td colSpan={6} className="px-4 py-10 text-center">
+                  <div className="w-6 h-6 border-2 border-red-200 border-t-red-500 rounded-full animate-spin mx-auto" />
                 </td>
               </tr>
-            ))}
+            )}
+            {!loading && filtered.map((u) => {
+              const role = roleOf(u);
+              return (
+                <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-red-gradient rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {(u.fullName ?? 'U').charAt(0)}
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900">{u.fullName}</div>
+                        <div className="text-xs text-gray-400">{u.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{u.phone ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${ROLE_CLS[role] ?? 'bg-gray-100 text-gray-600'}`}>{role}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                        u.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {u.isActive ? '● Hoạt động' : '○ Vô hiệu'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-400">{formatDate(u.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <Link
+                        to={`/admin/users/${u.id}`}
+                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors text-sm"
+                        title="Xem chi tiết"
+                      >
+                        👁
+                      </Link>
+                      <button
+                        onClick={() => toggleActive(u)}
+                        className={`p-1.5 rounded-lg transition-colors text-sm ${
+                          u.isActive ? 'text-amber-500 hover:bg-amber-50' : 'text-green-500 hover:bg-green-50'
+                        }`}
+                        title={u.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
+                      >
+                        {u.isActive ? '🔕' : '🔔'}
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(u.id)}
+                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm"
+                        title="Xóa"
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="py-12 text-center text-gray-400">
             <div className="text-4xl mb-2">🔍</div>
             <p>Không tìm thấy người dùng nào.</p>
@@ -153,22 +201,24 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-400">{filtered.length} người dùng</p>
-        <div className="flex gap-1">
-          {[1, 2, 3].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                page === p ? 'bg-red-gradient text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:border-red-300'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-4">
+          <p className="text-sm text-gray-400">Trang {page}/{totalPages}</p>
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  page === p ? 'bg-red-gradient text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:border-red-300'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Delete confirm */}
       {deleteId !== null && (
@@ -187,10 +237,7 @@ export default function AdminUsersPage() {
                 Hủy
               </button>
               <button
-                onClick={() => {
-                  setUsers((us) => us.filter((u) => u.id !== deleteId));
-                  setDeleteId(null);
-                }}
+                onClick={handleDelete}
                 className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700"
               >
                 Xóa

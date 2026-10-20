@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
 /**
- * Unit Tests cho VoucherServiceImpl - 15 test cases.
+ * Unit Tests cho VoucherServiceImpl - 18 test cases.
  * Minh họa mock VoucherRepository.
  */
 @ExtendWith(MockitoExtension.class)
@@ -159,5 +159,60 @@ class VoucherServiceImplTest {
         given(voucherRepository.findByCode("SALE20")).willReturn(Optional.of(percentVoucher));
         assertThatThrownBy(() -> voucherService.createVoucher(Voucher.builder().code("SALE20").build()))
                 .isInstanceOf(BadRequestException.class);
+    }
+
+    // ===== GET BY ID / GET ALL / TOGGLE =====
+    @Nested @DisplayName("Voucher Management") class ManagementTests {
+
+        @Test @DisplayName("Lấy voucher theo ID thành công")
+        void getVoucherById_Success() {
+            given(voucherRepository.findById(1L)).willReturn(Optional.of(percentVoucher));
+
+            Voucher result = voucherService.getVoucherById(1L);
+
+            assertThat(result.getCode()).isEqualTo("SALE20");
+            then(voucherRepository).should(times(1)).findById(1L);
+        }
+
+        @Test @DisplayName("Lấy voucher theo ID - không tồn tại → ResourceNotFoundException")
+        void getVoucherById_NotFound() {
+            given(voucherRepository.findById(99L)).willReturn(Optional.empty());
+
+            assertThatThrownBy(() -> voucherService.getVoucherById(99L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test @DisplayName("Lấy toàn bộ voucher")
+        void getAllVouchers_Success() {
+            given(voucherRepository.findAll()).willReturn(List.of(percentVoucher, fixedVoucher));
+
+            List<Voucher> result = voucherService.getAllVouchers();
+
+            assertThat(result).hasSize(2);
+            then(voucherRepository).should(times(1)).findAll();
+        }
+
+        @Test @DisplayName("Toggle - đang hoạt động → vô hiệu hóa")
+        void toggleActive_Deactivate() {
+            given(voucherRepository.findById(1L)).willReturn(Optional.of(percentVoucher));
+            given(voucherRepository.save(percentVoucher)).willReturn(percentVoucher);
+
+            Voucher result = voucherService.toggleActive(1L);
+
+            assertThat(result.getIsActive()).isFalse();
+            then(voucherRepository).should(times(1)).save(percentVoucher);
+        }
+
+        @Test @DisplayName("Toggle - đang vô hiệu → kích hoạt lại")
+        void toggleActive_Activate() {
+            percentVoucher.setIsActive(false);
+            given(voucherRepository.findById(1L)).willReturn(Optional.of(percentVoucher));
+            given(voucherRepository.save(percentVoucher)).willReturn(percentVoucher);
+
+            Voucher result = voucherService.toggleActive(1L);
+
+            assertThat(result.getIsActive()).isTrue();
+            then(voucherRepository).should(times(1)).save(percentVoucher);
+        }
     }
 }

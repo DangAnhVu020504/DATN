@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { orderService } from '@/services/orderService';
+import { voucherService } from '@/services/voucherService';
+import type { VoucherResponse } from '@/types';
 
 interface PackageForm {
   pickupAddress: string;
@@ -31,6 +34,10 @@ export default function CreateOrderPage() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<PackageForm>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [voucher, setVoucher] = useState<VoucherResponse | null>(null);
+  const [voucherError, setVoucherError] = useState('');
+  const [voucherChecking, setVoucherChecking] = useState(false);
 
   const set = (k: keyof PackageForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -38,19 +45,56 @@ export default function CreateOrderPage() {
   const basePrice = 15000;
   const weightCost = Number(form.packageWeight || 0) * 3000;
   const deliveryCost = form.deliveryType === 'EXPRESS' ? 20000 : form.deliveryType === 'SCHEDULED' ? 5000 : 0;
-  const totalPrice = basePrice + weightCost + deliveryCost;
+  const subtotal = basePrice + weightCost + deliveryCost;
+  const discount = voucher
+    ? voucher.discountType === 'PERCENTAGE'
+      ? Math.min(Math.ceil((subtotal * voucher.discountValue) / 100), voucher.maxDiscount ?? Infinity)
+      : voucher.discountValue
+    : 0;
+  const totalPrice = Math.max(subtotal - discount, 0);
 
   const canNext =
     step === 1 ? form.pickupAddress && form.deliveryAddress && form.pickupContactPhone && form.deliveryContactPhone
     : step === 2 ? form.packageDescription
     : true;
 
+  const handleApplyVoucher = async () => {
+    if (!form.voucherCode.trim()) return;
+    setVoucherChecking(true);
+    setVoucherError('');
+    try {
+      const res = await voucherService.validateVoucher(form.voucherCode.trim(), subtotal);
+      setVoucher(res.data.data);
+    } catch (e: any) {
+      setVoucher(null);
+      setVoucherError(e.response?.data?.message || 'Mã voucher không hợp lệ');
+    } finally {
+      setVoucherChecking(false);
+    }
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
+    setSubmitError('');
     try {
-      // TODO: Wire to orderService.create API
-      await new Promise((r) => setTimeout(r, 900));
-      navigate('/orders');
+      const res = await orderService.createOrder({
+        pickupAddress: form.pickupAddress,
+        pickupContactName: form.pickupContactName,
+        pickupContactPhone: form.pickupContactPhone,
+        deliveryAddress: form.deliveryAddress,
+        deliveryContactName: form.deliveryContactName,
+        deliveryContactPhone: form.deliveryContactPhone,
+        packageDescription: form.packageDescription || undefined,
+        packageWeight: form.packageWeight ? Number(form.packageWeight) : undefined,
+        packageNote: form.packageNote || undefined,
+        deliveryType: form.deliveryType,
+        scheduledTime: form.scheduledTime || undefined,
+        paymentMethod: form.paymentMethod,
+        voucherCode: form.voucherCode.trim() || undefined,
+      });
+      navigate(`/orders/${res.data.data.id}`);
+    } catch (e: any) {
+      setSubmitError(e.response?.data?.message || 'Tạo đơn hàng thất bại. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }
@@ -193,9 +237,20 @@ export default function CreateOrderPage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mã voucher</label>
               <div className="flex gap-2">
-                <input placeholder="Nhập mã (tùy chọn)" value={form.voucherCode} onChange={set('voucherCode')} className={inputCls} />
-                <button type="button" className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">Áp dụng</button>
+                <input placeholder="Nhập mã (tùy chọn)" value={form.voucherCode}
+                  onChange={(e) => { set('voucherCode')(e); setVoucher(null); setVoucherError(''); }}
+                  className={inputCls} />
+                <button type="button" onClick={handleApplyVoucher} disabled={voucherChecking || !form.voucherCode.trim()}
+                  className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors disabled:opacity-50">
+                  {voucherChecking ? '...' : 'Áp dụng'}
+                </button>
               </div>
+              {voucherError && <p className="text-xs text-red-500 mt-1.5">⚠️ {voucherError}</p>}
+              {voucher && (
+                <p className="text-xs text-green-600 mt-1.5">
+                  ✅ Áp dụng thành công: giảm {discount.toLocaleString('vi-VN')}₫
+                </p>
+              )}
             </div>
 
             {/* Price */}
@@ -203,10 +258,19 @@ export default function CreateOrderPage() {
               <div className="flex justify-between text-gray-600"><span>Giá cơ bản</span><span>{basePrice.toLocaleString('vi-VN')}₫</span></div>
               <div className="flex justify-between text-gray-600"><span>Phí khối lượng</span><span>{weightCost.toLocaleString('vi-VN')}₫</span></div>
               <div className="flex justify-between text-gray-600"><span>Loại giao</span><span>{deliveryCost.toLocaleString('vi-VN')}₫</span></div>
+              {voucher && discount > 0 && (
+                <div className="flex justify-between text-green-600"><span>Voucher ({voucher.code})</span><span>-{discount.toLocaleString('vi-VN')}₫</span></div>
+              )}
               <div className="border-t border-red-100 pt-2 flex justify-between font-black text-lg text-red-600" style={{ fontFamily: 'Nunito' }}>
                 <span>Tổng cộng</span><span>{totalPrice.toLocaleString('vi-VN')}₫</span>
               </div>
             </div>
+
+            {submitError && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">
+                ⚠️ {submitError}
+              </div>
+            )}
           </div>
         )}
 

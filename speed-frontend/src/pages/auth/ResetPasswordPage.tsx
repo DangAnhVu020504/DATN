@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '@/services/authService';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -18,8 +19,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
     setError('');
     try {
-      // TODO: Wire to authService resetPassword endpoint when backend exposes it
-      await new Promise((r) => setTimeout(r, 800));
+      await authService.resetPassword(form.email, form.otp, form.password);
       navigate('/login');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Đặt lại mật khẩu thất bại');

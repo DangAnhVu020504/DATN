@@ -19,7 +19,7 @@ Khi viết kiểm thử đơn vị (Unit Test), nếu phải khởi động đ�
 |---|---|
 | Phải cài đặt và cấu hình MySQL | Mất thời gian, phụ thuộc môi trường |
 | Phải cấu hình SMTP server | Không phải máy nào cũng có |
-| Phải khởi động toàn bộ Spring Context | Chậm (15-30 giây mỗi lần chạy) |
+| Phải khởi động toàn bộ Spring Context | Chậm (đo trong dự án: ~39,7 giây mỗi lần khởi động trên máy chạy nặng) |
 | Dữ liệu test bị thay đổi sau mỗi lần chạy | Kết quả không ổn định |
 | Khó giả lập trường hợp biên | Ví dụ: token hết hạn, voucher hết lượt |
 
@@ -147,6 +147,7 @@ Kỹ thuật Mocking được áp dụng tại **tầng Service** — nơi chứ
 | 9 | `ReviewServiceImpl` | Đánh giá đơn hàng | 5 |
 | 10 | `PricingServiceImpl` | Tính giá giao hàng | 0 (pure logic) |
 | 11 | `DistanceServiceImpl` | Tính khoảng cách GPS | 0 (pure logic) |
+| 12 | `WalletServiceImpl` | Ví tài xế, giao dịch, rút tiền | 3 |
 
 ### 3.3. Chiến lược Mock
 
@@ -178,23 +179,24 @@ Dựa trên phân tích dependencies, chiến lược mocking được chia thà
 
 ```
 speed-backend/src/test/java/com/speed/delivery/
-├── SpeedApplicationTest.java
+├── SpeedApplicationTest.java                (1 TC — smoke)
 ├── security/
 │   ├── CustomUserDetailsServiceTest.java    (5 TCs)
-│   └── JwtTokenProviderTest.java            (11 TCs)
+│   └── JwtTokenProviderTest.java            (10 TCs)
 └── service/impl/
-    ├── AuthServiceImplTest.java             (22 TCs)
+    ├── AuthServiceImplTest.java             (26 TCs)
     ├── OrderServiceImplTest.java            (17 TCs)
     ├── PaymentServiceImplTest.java          (10 TCs)
     ├── CustomerServiceImplTest.java         (12 TCs)
-    ├── DriverServiceImplTest.java           (12 TCs)
+    ├── DriverServiceImplTest.java           (18 TCs)
     ├── AdminServiceImplTest.java            (10 TCs)
     ├── NotificationServiceImplTest.java     (7 TCs)
-    ├── VoucherServiceImplTest.java          (15 TCs)
+    ├── VoucherServiceImplTest.java          (18 TCs)
     ├── ReviewServiceImplTest.java           (7 TCs)
-    ├── PricingServiceImplTest.java          (22 TCs)
-    └── DistanceServiceImplTest.java         (10 TCs)
-                                    Tổng: 158 Test Cases
+    ├── PricingServiceImplTest.java          (22 lượt)
+    ├── DistanceServiceImplTest.java         (10 lượt)
+    └── WalletServiceImplTest.java           (16 TCs)
+                        Tổng: 182 method → 189 lượt Unit + 5 demo = 194
 ```
 
 ### 4.3. Cấu hình JaCoCo trong pom.xml
@@ -213,6 +215,39 @@ speed-backend/src/test/java/com/speed/delivery/
             <id>report</id>
             <phase>test</phase>
             <goals><goal>report</goal></goals>
+        </execution>
+        <!-- Quality gate: 12 lớp Service trọng tâm phải đạt ≥ 90% line -->
+        <execution>
+            <id>check</id>
+            <goals><goal>check</goal></goals>
+            <configuration>
+                <rules>
+                    <rule>
+                        <element>CLASS</element>
+                        <includes>
+                            <include>*AuthServiceImpl</include>
+                            <include>*OrderServiceImpl</include>
+                            <include>*PaymentServiceImpl</include>
+                            <include>*PricingServiceImpl</include>
+                            <include>*VoucherServiceImpl</include>
+                            <include>*WalletServiceImpl</include>
+                            <include>*DriverServiceImpl</include>
+                            <include>*CustomerServiceImpl</include>
+                            <include>*AdminServiceImpl</include>
+                            <include>*NotificationServiceImpl</include>
+                            <include>*ReviewServiceImpl</include>
+                            <include>*DistanceServiceImpl</include>
+                        </includes>
+                        <limits>
+                            <limit>
+                                <counter>LINE</counter>
+                                <value>COVEREDRATIO</value>
+                                <minimum>0.90</minimum>
+                            </limit>
+                        </limits>
+                    </rule>
+                </rules>
+            </configuration>
         </execution>
     </executions>
 </plugin>
@@ -416,48 +451,57 @@ class AdminServiceImplTest {
 ### 5.1. Kết quả chạy test
 
 ```
-[INFO] Tests run: 158, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 194, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
-[INFO] Total time: 10.236 s
+[INFO] Total time:  01:44 min
 ```
 
-**Tất cả 158 test cases đều PASSED, không có failures hay errors.**
+**Tất cả 194 lượt (189 Unit Test + 5 lượt demo đối chứng) đều PASSED, không có failures hay errors; `jacoco:check` PASS.**
+
+*(Số liệu 18/10/2026 — `mvn clean verify`; riêng bộ unit 189 lượt chạy hết ~4,7 s.)*
 
 ### 5.2. Bảng tổng hợp kết quả theo module
 
 | # | Module Test | Số TCs | Dependencies Mock | Kết quả | Thời gian |
 |---|---|:---:|:---:|:---:|:---:|
-| 1 | AuthServiceImplTest | 22 | 11 | ✅ PASSED | ~0.5s |
-| 2 | OrderServiceImplTest | 17 | 10 | ✅ PASSED | ~0.4s |
-| 3 | PricingServiceImplTest | 22 | 0 | ✅ PASSED | ~0.04s |
-| 4 | VoucherServiceImplTest | 15 | 1 | ✅ PASSED | ~0.1s |
-| 5 | CustomerServiceImplTest | 12 | 4 | ✅ PASSED | ~0.1s |
-| 6 | DriverServiceImplTest | 12 | 5 | ✅ PASSED | ~0.1s |
-| 7 | JwtTokenProviderTest | 11 | 0 | ✅ PASSED | ~0.5s |
-| 8 | PaymentServiceImplTest | 10 | 2 | ✅ PASSED | ~0.1s |
-| 9 | AdminServiceImplTest | 10 | 5 | ✅ PASSED | ~0.3s |
-| 10 | DistanceServiceImplTest | 10 | 0 | ✅ PASSED | ~0.1s |
-| 11 | NotificationServiceImplTest | 7 | 1 | ✅ PASSED | ~0.1s |
-| 12 | ReviewServiceImplTest | 7 | 5 | ✅ PASSED | ~0.1s |
-| 13 | CustomUserDetailsServiceTest | 5 | 1 | ✅ PASSED | ~1.2s |
-| | **TỔNG CỘNG** | **158** | | **158/158 ✅** | **~10s** |
+| 1 | AuthServiceImplTest | 26 | 11 | ✅ PASSED | ~0.36s |
+| 2 | OrderServiceImplTest | 17 | 10 | ✅ PASSED | ~0.90s |
+| 3 | PricingServiceImplTest | 22 | 0 | ✅ PASSED | ~0.14s |
+| 4 | VoucherServiceImplTest | 18 | 1 | ✅ PASSED | ~0.36s |
+| 5 | CustomerServiceImplTest | 12 | 4 | ✅ PASSED | ~0.29s |
+| 6 | DriverServiceImplTest | 18 | 5 | ✅ PASSED | ~0.42s |
+| 7 | JwtTokenProviderTest | 10 | 0 | ✅ PASSED | ~0.27s |
+| 8 | PaymentServiceImplTest | 10 | 2 | ✅ PASSED | ~0.25s |
+| 9 | AdminServiceImplTest | 10 | 5 | ✅ PASSED | ~0.33s |
+| 10 | DistanceServiceImplTest | 10 | 0 | ✅ PASSED | ~0.26s |
+| 11 | NotificationServiceImplTest | 7 | 1 | ✅ PASSED | ~0.25s |
+| 12 | ReviewServiceImplTest | 7 | 5 | ✅ PASSED | ~0.27s |
+| 13 | WalletServiceImplTest | 16 | 3 | ✅ PASSED | ~0.52s |
+| 14 | CustomUserDetailsServiceTest | 5 | 1 | ✅ PASSED | ~0.09s |
+| 15 | SpeedApplicationTest | 1 | 0 | ✅ PASSED | ~0.02s |
+| | **TỔNG CỘNG** | **189** | | **189/189 ✅** | **~4,7s** |
 
 ### 5.3. Kết quả JaCoCo Code Coverage
 
 | Package | Line Coverage | Branch Coverage | Nhận xét |
 |---|:---:|:---:|---|
-| `service.impl` (tổng) | **83%** | **66%** | Đạt mục tiêu >80% |
+| `service.impl` (tổng, 18 lớp) | **91,4%** | **71,1%** | Vượt mục tiêu >80% |
+| Toàn dự án (66 lớp) | **75,2%** | **66,2%** | Gồm Controller/Entity ngoài phạm vi |
+| — WalletServiceImpl | **100%** | **100%** | Hoàn hảo |
 | — PaymentServiceImpl | **100%** | **100%** | Hoàn hảo |
-| — NotificationServiceImpl | **100%** | — | Hoàn hảo |
 | — PricingServiceImpl | **100%** | **100%** | Hoàn hảo |
 | — DistanceServiceImpl | **100%** | — | Hoàn hảo |
-| — VoucherServiceImpl | **100%** | **94%** | Gần hoàn hảo |
-| — AdminServiceImpl | **99%** | **83%** | Rất tốt |
-| — OrderServiceImpl | **90%** | **51%** | Tốt |
-| — CustomerServiceImpl | **86%** | **70%** | Tốt |
-| — ReviewServiceImpl | **86%** | **85%** | Tốt |
-| — AuthServiceImpl | **84%** | **50%** | Tốt |
-| — DriverServiceImpl | **83%** | **90%** | Tốt |
+| — DriverServiceImpl | **100%** | **90%** | Hoàn hảo line |
+| — AdminServiceImpl | **100%** | **83,3%** | Hoàn hảo line |
+| — NotificationServiceImpl | **100%** | — | Hoàn hảo |
+| — VoucherServiceImpl | **100%** | **95%** | Hoàn hảo line |
+| — AuthServiceImpl | **100%** | **78,1%** | Hoàn hảo line |
+| — CustomerServiceImpl | **96,1%** | **70%** | Tốt |
+| — OrderServiceImpl | **94,5%** | **46,9%** | Tốt (branch còn thấp) |
+| — ReviewServiceImpl | **93,3%** | **85,7%** | Tốt |
+| — JwtTokenProvider (security) | **91,5%** | — | Tốt |
+| — CustomUserDetailsService (security) | **100%** | **100%** | Hoàn hảo |
+| Còn thiếu: AuditLogServiceImpl / OTPServiceImpl | 35,5% / 4,3% | — / 0% | Chưa có test riêng |
 
 ### 5.4. Tổng hợp kỹ thuật Mocking đã áp dụng
 
@@ -478,8 +522,9 @@ class AdminServiceImplTest {
 
 | Tiêu chí | Có Mocking (Mockito) | Không Mocking (Integration Test) |
 |---|---|---|
-| **Tốc độ** | ~19ms/test | ~200-500ms/test |
+| **Tốc độ** | ~25 ms/lượt test | ~270 ms cho 1 login qua Spring+H2 thật |
 | **Phụ thuộc bên ngoài** | Không cần DB, Email, SMS | Cần MySQL, SMTP config |
+| **Khởi động môi trường** | ~0 ms | Spring Context: ~39,7 s (đo 18/10) |
 | **Độ cô lập** | 100% cô lập logic | Phụ thuộc nhiều thành phần |
 | **Trường hợp biên** | Dễ giả lập (null, hết hạn, hết lượt) | Khó tạo dữ liệu biên |
 | **Verify hành vi** | `shouldHaveNoInteractions()`, `InOrder` | Không kiểm tra được |
@@ -494,10 +539,10 @@ class AdminServiceImplTest {
 
 Việc áp dụng kỹ thuật Mocking trong kiểm thử đơn vị cho hệ thống Speed Delivery đã đạt được các kết quả sau:
 
-1. **158 test cases** được xây dựng cho **13 module**, tất cả PASSED 100%.
-2. **Code coverage đạt 83%** cho tầng Service (vượt mục tiêu 80%).
-3. **4 module đạt coverage 100%**: PaymentServiceImpl, NotificationServiceImpl, PricingServiceImpl, DistanceServiceImpl.
-4. **Thời gian thực thi chỉ ~10 giây** cho toàn bộ 158 test cases — nhanh hơn 3-6 lần so với Integration Test.
+1. **189 lượt unit test** được xây dựng cho **12 lớp Service nghiệp vụ** + 2 lớp bảo mật (JWT, UserDetails) + smoke test — tất cả PASSED 100% (tổng 194 lượt khi tính cả 5 lượt demo đối chứng).
+2. **Code coverage đạt 97,8% line** cho 12 lớp Service đã test (cả package `service.impl`: **91,4%**) — vượt mục tiêu 80%; `jacoco:check` xác minh tự động khi `mvn verify`.
+3. **9 lớp đạt coverage line 100%**: Payment, Pricing, Distance, Driver, Admin, Notification, Voucher, Auth, Wallet.
+4. **Thời gian thực thi chỉ ~4,7 giây** cho toàn bộ 189 lượt unit test (toàn vòng `mvn clean verify` 194 lượt + quality gate + đóng gói: 01:44 min).
 5. **Không cần bất kỳ tài nguyên bên ngoài** nào (DB, email server, SMS gateway) để chạy test.
 
 ### 6.2. Bài học kinh nghiệm

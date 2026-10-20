@@ -1,5 +1,5 @@
 ﻿import api from './api';
-import type { ApiResponse, OrderResponse, Page, CreateOrderRequest } from '@/types';
+import type { ApiResponse, OrderResponse, OrderHistoryResponse, Page, CreateOrderRequest } from '@/types';
 
 export const orderService = {
   createOrder: (data: CreateOrderRequest) =>
@@ -7,6 +7,9 @@ export const orderService = {
 
   getOrderById: (id: number) =>
     api.get<ApiResponse<OrderResponse>>(`/orders/${id}`),
+
+  getOrderHistory: (id: number) =>
+    api.get<ApiResponse<OrderHistoryResponse[]>>(`/orders/${id}/history`),
 
   getOrderByCode: (code: string) =>
     api.get<ApiResponse<OrderResponse>>(`/orders/code/${code}`),

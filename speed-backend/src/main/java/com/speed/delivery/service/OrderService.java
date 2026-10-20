@@ -1,9 +1,12 @@
 package com.speed.delivery.service;
 
+import com.speed.delivery.dto.response.OrderHistoryResponse;
 import com.speed.delivery.dto.response.OrderResponse;
 import com.speed.delivery.dto.request.CreateOrderRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface OrderService {
     OrderResponse createOrder(String customerEmail, CreateOrderRequest request);
@@ -11,6 +14,9 @@ public interface OrderService {
     OrderResponse getOrderByCode(String orderCode);
     Page<OrderResponse> getCustomerOrders(Long customerId, Pageable pageable);
     Page<OrderResponse> getDriverOrders(Long driverId, Pageable pageable);
+    Page<OrderResponse> getAllOrders(String status, Pageable pageable);
+    List<OrderResponse> getAvailableOrders();
+    List<OrderHistoryResponse> getOrderHistory(Long orderId);
     OrderResponse assignDriver(Long orderId, Long driverId);
     OrderResponse updateOrderStatus(Long orderId, String status, Long changedBy);
     OrderResponse cancelOrder(Long orderId, String reason, Long cancelledBy);

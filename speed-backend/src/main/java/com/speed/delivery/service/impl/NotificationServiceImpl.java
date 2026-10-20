@@ -4,6 +4,7 @@ import com.speed.delivery.dto.response.NotificationResponse;
 import com.speed.delivery.entity.Notification;
 import com.speed.delivery.entity.User;
 import com.speed.delivery.enums.NotificationType;
+import com.speed.delivery.exception.ResourceNotFoundException;
 import com.speed.delivery.repository.NotificationRepository;
 import com.speed.delivery.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,15 @@ public class NotificationServiceImpl implements NotificationService {
             n.setIsRead(true);
             notificationRepository.save(n);
         });
+    }
+
+    @Override
+    @Transactional
+    public void deleteNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification", "id", notificationId));
+        notificationRepository.delete(notification);
+        log.info("Notification deleted: id={}", notificationId);
     }
 
     @Override
