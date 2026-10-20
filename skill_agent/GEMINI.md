@@ -13,35 +13,68 @@ reconstruct what happened from the files alone.
 
 ## 1. This repository
 
-Backend of the restaurant management system: Java 21, Spring Boot 4.1 (WebMVC, Data JPA, Security,
-Validation, Actuator), MySQL, Maven. The sibling frontend repository is
-`tip_dc13_fe_restaurantmanagement` (Next.js): an API contract change needs a matching spec entry
-there and here.
+Speed Delivery - thesis project "Research and application of Mocking in unit testing". Backend:
+Java 21, Spring Boot 3.4.1 (WebMVC, Data JPA, Security, Validation), MySQL, Maven, JUnit 5,
+Mockito, AssertJ, JaCoCo. Frontend: `speed-frontend` (React 19 + Vite + TypeScript + Redux Toolkit
++ TanStack Query); it is outside the unit-test experiment and has no test runner.
 
-### Gates - run in this repository before code review and before commit
+### Gates - run from `speed-backend/` before code review and before commit
 
 ```
 mvn -q verify
 ```
 
-`verify` runs the test suite; new behaviour needs a test at service level as a minimum.
+`verify` runs the full JUnit 5 suite and JaCoCo, including the `jacoco:check` rule that requires
+the 12 in-scope service classes to keep at least 90% line coverage. Single class:
+`mvn -q -Dtest=<ClassName> test`. The bundled `mvnw.cmd` is broken in this checkout; use the
+system Maven 3.9+ with JDK 21.
 
 ### Conventions and reuse inventory
 
 Layering is strict: controller -> service interface -> service impl -> repository -> entity.
-DTOs under `dto/<domain>/`, mappers under `mapper/<Domain>Mapper`, entities under `entities/`,
-repositories under `repository/`, services under `services/` + `services/impl/`, cross-cutting
-code under `common/`, wiring under `config/`.
+
+- controllers under `controller/`
+- services under `service/` + `service/impl/`
+- repositories under `repository/`
+- entities under `entity/`, enums under `enums/`
+- DTOs under `dto/request/` and `dto/response/` (Lombok builders)
+- security under `security/`, cross-cutting wiring under `config/`
+- domain exceptions and the handler under `exception/`
 
 Reuse before creating anything new - a reviewer rejects duplicates of these:
 
-- error handling: `common/exception/` - AppException, ErrorCode, GlobalExceptionHandler
-- response envelopes: `common/response/` - SuccessResponse, ErrorResponse, ValidationErrorResponse
-- search / filter / sort: `common/specification/` - SearchRequest, FilterCriteria, FilterOperation,
-  GenericSpecification, GenericSortBuilder, SortCriteria
-- helpers: `common/util/StringUtil`
-- auth: `config/` - JwtService, JwtAuthenticationFilter, SecurityConfig
-- infrastructure: `config/SwaggerConfig`, `config/EnvironmentValidationConfig`, `DataInitializer`
+- exceptions: `exception/` - `BadRequestException`, `ResourceNotFoundException`,
+  `DuplicateResourceException`, `UnauthorizedException`, `VoucherExpiredException`,
+  `PaymentFailedException`, `GlobalExceptionHandler`
+- response envelope: `dto/response/ApiResponse`
+- auth: `security/JwtTokenProvider`, `security/JwtAuthenticationFilter`,
+  `security/CustomUserDetailsService`, `config/SecurityConfig`
+- tests: JUnit 5 + `MockitoExtension` + BDDMockito + AssertJ already on the classpath; no new
+  test library unless the spec allows it
+
+### Testing contract (this repository)
+
+The thesis experiment lives at the service layer only. Controllers, entities and repositories
+are not unit-test targets here.
+
+- A unit test is pure Mockito: `@ExtendWith(MockitoExtension.class)`, `@Mock`, `@InjectMocks`,
+  BDDMockito and AssertJ. No `@SpringBootTest`, no database, no network, no filesystem.
+- `src/test/java/com/speed/delivery/demo/` contains deliberate comparison experiments
+  (`MockingDemoTest`, `SpringContextDemoTest`). They are exempt from the isolation rule but must
+  not be copied into a normal test suite.
+- Mock only Depended-On Components at the boundary: repositories, external services and
+  infrastructure. Never mock the class under test, entities, DTOs, value objects or Lombok
+  builders.
+- Every suite covers three paths with stable test-case ids: happy path (HP), edge case (ED) and
+  exception path (EX). Assert exception types and messages; assert fail-fast with
+  `shouldHaveNoInteractions` / `never()` where the business rule forbids further calls.
+- Mockito strict stubs stay enabled. No unnecessary stubbing, no `any()` when the value matters,
+  use `ArgumentCaptor` when the payload is the point.
+- One behaviour per test, fresh fixture in `@BeforeEach`, `@DisplayName` in Vietnamese matching
+  the existing `TCxx` style.
+- The target class keeps at least 90% line coverage (`jacoco:check`); a new suite must not lower
+  the gate. Runtime and coverage numbers used in the thesis are recorded in the handoff document
+  with the exact command that produced them.
 
 ## 2. Pipeline and skills
 
@@ -80,9 +113,10 @@ Reuse before creating anything new - a reviewer rejects duplicates of these:
 | 5 handoff    | `sdlc-handoff-doc`      | subagent   | `docs/handoff/`                  |
 | 6 commit     | `sdlc-committer`        | subagent   | git index only                 |
 
-Skills live in `.agents/skills/<skill-name>/SKILL.md` inside this repository. The controller loads
-`sdlc-orchestrator`; every subagent loads the skill of its own stage. Prompts handed to subagents
-are written in English.
+Skills live in `skill_agent/.agents/skills/<skill-name>/SKILL.md` inside this repository.
+`opencode.json` loads `skill_agent/GEMINI.md` as instructions and that skills directory as the
+skill path. The controller loads `sdlc-orchestrator`; every subagent loads the skill of its own
+stage. Prompts handed to subagents are written in English.
 
 ## 3. Artifacts
 
@@ -90,9 +124,12 @@ are written in English.
 - `specs/<feature-id>/reviews/spec-review-<attempt>.md` - spec review verdicts and findings.
 - `specs/<feature-id>/reviews/code-review-<attempt>.md` - code review verdicts and findings.
 - `docs/handoff/<feature-id>.md` - handoff document, written after code review passes.
-- Branch: `feature/<feature-id>` from `origin/dev` (never the local `dev`, which can be stale).
+- Branch: `feature/<feature-id>` from `main` (this repository has no `dev` branch; do not create
+  one for a feature).
 
-Feature id is the tracker id in upper case, e.g. `RM-88`; without a tracker use `FEAT-<slug>`.
+Feature ids for this thesis: `TEST-<Module>` for one unit-test suite (for example `TEST-AUDIT`)
+and `EXP-<name>` for a controlled experiment (for example `EXP-MOCK-VS-NOMOCK`). Without a
+tracker use `FEAT-<slug>`.
 Review reports are kept forever - they are the decision trail. Revise a spec in place, but never
 delete or rewrite a review report.
 
@@ -103,7 +140,7 @@ the next step; prose above the block is for humans.
 
 ```
 REPORT
-feature_id: RM-88
+feature_id: TEST-AUDIT
 stage: spec-writer | spec-reviewer | developer | code-reviewer | handoff-doc | committer
 attempt: 1
 verdict: DONE | BLOCKED | APPROVE | CHANGES_REQUESTED
@@ -150,8 +187,10 @@ Verdict rule, mechanical: any `blocker` or `major` => `CHANGES_REQUESTED`; only 
 
 ## 6. Hard rules
 
-- Never commit: `.env*`, secrets, tokens, dependency folders, build output, `*.tsbuildinfo`, logs,
-  editor and OS junk, verification scratch directories.
+- Never commit: `.env*`, secrets, tokens, `node_modules/`, `target/`, `speed-frontend/dist/`,
+  `*.tsbuildinfo`, editor and OS junk, verification scratch directories.
+- Logs are not committed. The thesis evidence under `bang_chung_so_lieu/` may be committed only
+  in an explicit evidence/docs commit, never inside a feature commit.
 - Never widen scope "while we are here". An unrelated refactor is its own feature.
 - Spec and handoff documents are written in the language the human used for the request.
 - Commit is local. Pushing, merging and opening pull requests require an explicit human order.
@@ -161,7 +200,7 @@ Verdict rule, mechanical: any `blocker` or `major` => `CHANGES_REQUESTED`; only 
 The human states the feature id and the request, for example:
 
 ```
-Chạy SDLC cho RM-88: cho phép gộp bàn khi khách yêu cầu.
+Chạy SDLC cho TEST-AUDIT: bổ sung unit test cho AuditLogServiceImpl.
 ```
 
 The controller agent then loads `sdlc-orchestrator` and runs the pipeline from stage 1.

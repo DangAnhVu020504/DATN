@@ -58,6 +58,30 @@ AC-1 (FR-1) ...
 - Written in the language the human used for the request, in Markdown.
 - As short as the content allows: no filler, no restating the request, no marketing words.
 
+## Test-design specs (this repository)
+
+A thesis feature is usually a unit-test suite, not a product endpoint. A spec for `TEST-<Module>`
+must additionally state:
+
+- SUT: class, public methods, path, and why the layer is in scope.
+- Dependency/seam table: every constructor dependency, its type and a `mock` | `real` decision.
+  Mock only repositories, external services and infrastructure. Never mock the SUT, entities,
+  DTOs, value objects or Lombok builders.
+- Test-case matrix: one row per TC with id, path `HP` | `ED` | `EX`, arrangement (mocked
+  return/throw), action, expected result and interaction verification. At least one HP, one ED
+  and one EX per public method unless the spec justifies the exception.
+- Exact exception type and message/condition for every EX case.
+- Fail-fast expectations (`shouldHaveNoInteractions` / `never()`) wherever the business rule
+  forbids downstream calls after a failure.
+- Coverage target for the SUT (>= 90% line, enforced by `jacoco:check`) and the command that
+  measures it.
+- Out of scope: no `@SpringBootTest`, no database, network or filesystem, no controller, entity
+  or repository tests, and no production refactor unless a test proves a bug that the spec lists.
+
+An `EXP-<name>` spec states the hypothesis, baseline and variant, fixed environment, the exact
+metric and threshold, and where the raw evidence will be stored. It must be reproducible by one
+command.
+
 ## Output
 
 Write the file, then end with one REPORT block: stage `spec-writer`, verdict `DONE` or `BLOCKED`,

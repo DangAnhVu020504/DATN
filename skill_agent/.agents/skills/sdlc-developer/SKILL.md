@@ -43,16 +43,21 @@ nothing beyond scope - following the conventions in `GEMINI.md`.
 - Diff contains nothing unrelated.
 
 
-## TypeScript / React specifics (this project)
+## Java 21 / Spring Boot / Mockito specifics (this repository)
 
-- Feature layout: `src/features/<name>/{components,hooks,services,utils,types,constants,index.ts}`.
-- Data fetching and mutations live in TanStack Query hooks under `hooks/` calling `services/`;
-  components stay presentational where practical.
-- Forms: react-hook-form + zod (`@hookform/resolvers`), schema in the feature's `utils/validation.ts`.
-- Loading / error / empty states go through `src/components/common/AsyncStateView.tsx` instead of
-  three hand-rolled branches.
-- Types are explicit: no `any`, no unnecessary `as`; cross-feature domain types live in `src/types/`.
-- Keep `"use client"` only where interaction actually needs it; no secrets in client-side code.
+- Production code lives under `speed-backend/src/main/java/com/speed/delivery/`; tests mirror the
+  package under `speed-backend/src/test/java/com/speed/delivery/service/impl/`.
+- Constructor injection only (`@RequiredArgsConstructor`); do not introduce field injection.
+- Tests: `@ExtendWith(MockitoExtension.class)`, `@Mock` for boundary dependencies, `@InjectMocks`
+  for the SUT, BDDMockito `given/willReturn/willThrow` and `then/should`.
+- Build fixtures with Lombok builders; never mock entities, DTOs, value objects or the SUT.
+- Fresh fixture in `@BeforeEach`; group related cases with `@Nested`; `@DisplayName` in Vietnamese
+  with a stable TC id (for example `TC01 - ...`).
+- Assert exceptions with AssertJ `assertThatThrownBy`; assert the message when the spec names it.
+- Run gates from `speed-backend/`: `mvn -q verify`; single class
+  `mvn -q -Dtest=<ClassName> test`.
+- Do not edit `src/test/java/com/speed/delivery/demo/`, the JaCoCo includes, or the Surefire
+  config unless the spec explicitly says so.
 
 ## REPORT
 

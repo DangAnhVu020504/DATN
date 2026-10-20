@@ -56,6 +56,19 @@ How to undo this safely, including data migration reversal if any.
 Worth doing next, and why it is not in this change.
 ```
 
+## Thesis evidence for `TEST-*` / `EXP-*` features
+
+In section 7, record the numbers that the thesis will quote, each produced by a command run in
+this session:
+
+- gate command and result (`mvn -q verify`, `jacoco:check` PASS/FAIL);
+- test count, failures and errors from the Surefire reports;
+- per-class line and branch coverage from `target/site/jacoco/jacoco.csv`;
+- wall-clock time for the suite or class from the Surefire XML `time` attributes;
+- the evidence file path under `bang_chung_so_lieu/` when raw output is copied there.
+
+Numbers without a command and a path are not evidence and must not appear in the document.
+
 ## Rules
 
 - Every factual claim points at a file you read. No invented behaviour, no aspirational wording.

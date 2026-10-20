@@ -96,19 +96,25 @@ matching the report file, findings mirroring the file, evidence listing the gate
 and their results.
 
 
-### TypeScript / React checklist
+### Java / Spring / Mockito checklist
 
-- Hooks: rules of hooks respected, dependency arrays complete and minimal, no state derivable from
-  props or other state, no effect doing what a query should do.
-- Types: no `any`, no unchecked `!`, no `as unknown as`; discriminated unions instead of pairs of
-  booleans that can contradict each other.
-- Data layer: query keys consistent and unique, cache invalidation correct after mutations, pending
-  and error states actually reach the UI, no silent `catch`.
-- Forms: the zod schema is the single validation source; server-side errors map through
-  `src/utils/form-errors` / `getApiErrorMessage`; no second validation implementation in JSX.
-- UI states: loading, empty, error and success all handled; stable list keys; no unescaped user
-  content; user-facing strings come from the same place as the rest of the feature.
-- Next.js: `"use client"` placement, server/client boundary respected, nothing sensitive in the
-  client bundle, no data fetching in render.
-- Styling: Tailwind classes consistent with the surrounding UI, no one-off style system.
+- Isolation: `@ExtendWith(MockitoExtension.class)` only; no `@SpringBootTest`, database, network
+  or filesystem in a unit-test suite. Demo classes under `demo/` are the only exception.
+- Mock scope: only boundary DOCs are mocked. The SUT, entities, DTOs, value objects and Lombok
+  builders are real. Mocking them is a `blocker`.
+- Strict stubs: no unnecessary stubbing, no stub whose value the test never relies on.
+- Behaviour over implementation: assert observable outcome first; verify interactions only where
+  the contract requires them. Do not verify getters, logging or incidental internal calls.
+- Matchers: no `any()` when the value is the point; use `eq()` or `ArgumentCaptor` and assert the
+  captured payload.
+- Exception tests: exact exception type and message/condition; assert that later dependencies were
+  not called (`shouldHaveNoInteractions` / `never()`) where fail-fast is required.
+- Independence: fresh fixture in `@BeforeEach`, no shared mutable state, no order dependence, no
+  sleeps; the class must pass alone and inside the full suite.
+- Coverage: run `mvn -q verify` from `speed-backend/`. `jacoco:check` PASS and the target class
+  keeps >= 90% line coverage. A new suite that lowers the gate is a `blocker`.
+- Naming and structure: TC id plus Vietnamese `@DisplayName`, one behaviour per test, `@Nested`
+  grouping that matches the spec matrix.
+- Scope: no production change the spec did not ask for, no weakened or deleted existing test, no
+  edit to the demo classes, `pom.xml` gate or Surefire configuration.
 

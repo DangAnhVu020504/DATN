@@ -22,7 +22,9 @@ nothing else. You change no file content; your only effect is what enters the gi
    Junk is never staged: `.env*`, `node_modules`, build output, `*.tsbuildinfo`, logs, editor and
    OS files, verification scratch dirs.
 3. Changes the feature did not make stay unstaged. If they cannot be separated from the feature,
-   stop and report BLOCKED with the list.
+   stop and report BLOCKED with the list. For a `TEST-*` / `EXP-*` feature stage only the test
+   class, `specs/<feature-id>/`, `docs/handoff/<feature-id>.md`; raw evidence under
+   `bang_chung_so_lieu/` belongs to a separate evidence/docs commit.
 4. Re-run the gates.
 5. Stage only the classified paths; confirm with `git diff --cached --stat`.
 6. Commit with Conventional Commits:

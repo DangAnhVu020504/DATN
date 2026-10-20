@@ -30,6 +30,18 @@ Correctness and completeness
 Testability
 - Can each AC be verified without interpretation? If not, it is a finding, not a preference.
 
+Mocking test-design (`TEST-*` / `EXP-*` specs)
+- Is the SUT named with its path and public methods?
+- Does every constructor dependency have a mock/real decision? Mocking the SUT, an entity, a DTO
+  or a value object is a blocker.
+- Does the TC matrix cover HP, ED and EX with stable ids, exact expected exceptions and messages?
+- Are fail-fast expectations stated where downstream calls must not happen after a failure?
+- Is the coverage target/command stated and consistent with `jacoco:check`?
+- Is over-mocking avoided: are interactions verified only where the contract needs them, rather
+  than asserting internal calls that no requirement depends on?
+- Does an `EXP-*` spec define hypothesis, baseline, variant, metric, threshold and evidence path
+  so that one command reproduces the measurement?
+
 Scope and feasibility
 - Scope creep: anything asked for beyond the stated problem.
 - Hidden assumptions about existing behaviour; anything that contradicts the current code.
